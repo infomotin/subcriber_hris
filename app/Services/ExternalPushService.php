@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\Api\MockRemoteServerController;
 use App\Models\AttendanceLog;
 use App\Models\TenantPushLog;
 use App\Models\TenantWebhookSetting;
@@ -31,7 +32,7 @@ class ExternalPushService
 
         $formattedData = $this->formatPayload($setting, $logs);
 
-        // Check if endpoint is local mock server or local domain to prevent single-worker FastCGI deadlock
+        // Check if endpoint is local mock server or local domain to prevent single-worker FastCGI deadlock & session corruption
         $parsedUrl = parse_url($setting->endpoint_url);
         $host = $parsedUrl['host'] ?? '';
         $path = $parsedUrl['path'] ?? '/';
@@ -127,19 +128,21 @@ class ExternalPushService
             'HTTP_HOST' => 'amds.test',
         ];
 
-        // Attach Auth Headers
+        // Attach Auth Headers according to setting configuration
         switch ($setting->auth_type) {
             case 'bearer':
                 if ($setting->auth_token) {
                     $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $setting->auth_token;
                 }
                 break;
+
             case 'api_key':
                 if ($setting->auth_header_name && $setting->auth_token) {
                     $headerKey = 'HTTP_' . strtoupper(str_replace('-', '_', $setting->auth_header_name));
                     $server[$headerKey] = $setting->auth_token;
                 }
                 break;
+
             case 'basic':
                 if ($setting->auth_username) {
                     $server['PHP_AUTH_USER'] = $setting->auth_username;
@@ -149,7 +152,23 @@ class ExternalPushService
         }
 
         $internalRequest = LaravelRequest::create($path, 'POST', [], [], [], $server, $content);
-        $response = app()->handle($internalRequest);
+
+        // Execute target controller method directly to avoid session middleware pipeline overwriting user session
+        $controller = app()->make(MockRemoteServerController::class);
+
+        $cleanPath = rtrim($path, '/');
+
+        if (str_contains($cleanPath, 'no-auth')) {
+            $response = $controller->receiveNoAuth($internalRequest);
+        } elseif (str_contains($cleanPath, 'bearer')) {
+            $response = $controller->receiveBearer($internalRequest);
+        } elseif (str_contains($cleanPath, 'api-key')) {
+            $response = $controller->receiveApiKey($internalRequest);
+        } elseif (str_contains($cleanPath, 'basic')) {
+            $response = $controller->receiveBasic($internalRequest);
+        } else {
+            $response = $controller->receiveNoAuth($internalRequest);
+        }
 
         $statusCode = $response->getStatusCode();
         $responseBody = mb_strimwidth($response->getContent(), 0, 1000, '...');

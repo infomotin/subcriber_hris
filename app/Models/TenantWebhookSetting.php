@@ -14,6 +14,7 @@ class TenantWebhookSetting extends Model
         'tenant_id',
         'endpoint_url',
         'push_schedule',
+        'scheduled_time',
         'data_format',
         'date_format',
         'custom_mapping',

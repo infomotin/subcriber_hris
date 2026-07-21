@@ -1,12 +1,12 @@
 @extends('layouts.subscriber')
 
-@section('title', 'External Server Data Push & Custom Payload Mapping')
+@section('title', 'External Server Data Push & Scheduled Automation')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h4 class="fw-bold mb-1"><i class="bx bx-send text-primary me-2 font-size-22"></i> External Server Data Push & Custom Mapping</h4>
-        <p class="text-muted font-size-13 mb-0">Customize date/time formats, field key names, and payload structures for your remote server or ERP.</p>
+        <h4 class="fw-bold mb-1"><i class="bx bx-send text-primary me-2 font-size-22"></i> External Server Data Push & Scheduled Automation</h4>
+        <p class="text-muted font-size-13 mb-0">Configure automatic real-time or time-scheduled pushes to your remote server/ERP endpoint.</p>
     </div>
     @if(!empty($setting->endpoint_url))
         <form action="{{ route('subscriber.webhook.test') }}" method="POST" class="d-inline">
@@ -41,29 +41,37 @@
 <form action="{{ route('subscriber.webhook.update') }}" method="POST">
     @csrf
     <div class="row g-4 mb-4">
-        <!-- Left Column: Webhook & Format Settings -->
+        <!-- Left Column: Webhook & Schedule Settings -->
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-slider-alt text-primary me-2"></i> Webhook & Endpoint Settings</h5>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-slider-alt text-primary me-2"></i> Endpoint & Schedule Automation</h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark font-size-13">Remote Server Endpoint URL</label>
-                        <input type="url" name="endpoint_url" class="form-control" placeholder="https://my-erp.company.com/api/v1/attendance-webhook" value="{{ old('endpoint_url', $setting->endpoint_url) }}">
+                        <input type="url" name="endpoint_url" class="form-control border-secondary" placeholder="https://my-erp.company.com/api/v1/attendance-webhook" value="{{ old('endpoint_url', $setting->endpoint_url) }}">
                         <small class="text-muted">Enter the HTTPS or HTTP URL of your remote server where data should be pushed.</small>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark font-size-13">Push Schedule Mode</label>
-                            <select name="push_schedule" class="form-select border-secondary">
-                                <option value="realtime" {{ $setting->push_schedule === 'realtime' ? 'selected' : '' }}>Realtime (Instant on Punch)</option>
-                                <option value="hourly" {{ $setting->push_schedule === 'hourly' ? 'selected' : '' }}>Hourly Batch Push</option>
-                                <option value="daily" {{ $setting->push_schedule === 'daily' ? 'selected' : '' }}>Daily Summary Push</option>
+                            <select name="push_schedule" id="selectPushSchedule" class="form-select border-secondary">
+                                <option value="realtime" {{ $setting->push_schedule === 'realtime' ? 'selected' : '' }}>Realtime (Instant on Machine Punch)</option>
+                                <option value="hourly" {{ $setting->push_schedule === 'hourly' ? 'selected' : '' }}>Hourly Batch Auto Push</option>
+                                <option value="daily" {{ $setting->push_schedule === 'daily' ? 'selected' : '' }}>Daily Scheduled Time Auto Push</option>
                                 <option value="manual" {{ $setting->push_schedule === 'manual' ? 'selected' : '' }}>Manual Push Only</option>
                             </select>
                         </div>
+                        <div class="col-md-6" id="boxScheduledTime" style="display: {{ $setting->push_schedule === 'daily' ? 'block' : 'none' }};">
+                            <label class="form-label fw-bold text-dark font-size-13">Daily Scheduled Push Time</label>
+                            <input type="time" name="scheduled_time" class="form-control border-secondary" value="{{ old('scheduled_time', $setting->scheduled_time ?? '23:00') }}">
+                            <small class="text-muted">Server automatically pushes data at this time every day.</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark font-size-13">Data Payload Format</label>
                             <select name="data_format" id="selectDataFormat" class="form-select border-secondary">
@@ -72,17 +80,16 @@
                                 <option value="excel" {{ $setting->data_format === 'excel' ? 'selected' : '' }}>Excel Matrix Payload</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-dark font-size-13">Custom Date & Time Format</label>
-                        <select name="date_format" id="selectDateFormat" class="form-select border-secondary">
-                            <option value="Y-m-d H:i:s" {{ $setting->date_format === 'Y-m-d H:i:s' ? 'selected' : '' }}>Standard SQL (2026-07-21 09:30:00)</option>
-                            <option value="Y-m-d\TH:i:sP" {{ $setting->date_format === 'Y-m-d\TH:i:sP' ? 'selected' : '' }}>ISO 8601 (2026-07-21T09:30:00+06:00)</option>
-                            <option value="d/m/Y H:i:s" {{ $setting->date_format === 'd/m/Y H:i:s' ? 'selected' : '' }}>UK / Asia (21/07/2026 09:30:00)</option>
-                            <option value="d-m-Y h:i:s A" {{ $setting->date_format === 'd-m-Y h:i:s A' ? 'selected' : '' }}>12-Hour AM/PM (21-07-2026 09:30:00 AM)</option>
-                            <option value="timestamp" {{ $setting->date_format === 'timestamp' ? 'selected' : '' }}>Unix Timestamp (Epoch Seconds)</option>
-                        </select>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark font-size-13">Custom Date & Time Format</label>
+                            <select name="date_format" id="selectDateFormat" class="form-select border-secondary">
+                                <option value="Y-m-d H:i:s" {{ $setting->date_format === 'Y-m-d H:i:s' ? 'selected' : '' }}>Standard SQL (2026-07-21 09:30:00)</option>
+                                <option value="Y-m-d\TH:i:sP" {{ $setting->date_format === 'Y-m-d\TH:i:sP' ? 'selected' : '' }}>ISO 8601 (2026-07-21T09:30:00+06:00)</option>
+                                <option value="d/m/Y H:i:s" {{ $setting->date_format === 'd/m/Y H:i:s' ? 'selected' : '' }}>UK / Asia (21/07/2026 09:30:00)</option>
+                                <option value="d-m-Y h:i:s A" {{ $setting->date_format === 'd-m-Y h:i:s A' ? 'selected' : '' }}>12-Hour AM/PM (21-07-2026 09:30:00 AM)</option>
+                                <option value="timestamp" {{ $setting->date_format === 'timestamp' ? 'selected' : '' }}>Unix Timestamp (Epoch Seconds)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <hr class="my-4">
@@ -129,11 +136,19 @@
                         </div>
                     </div>
 
-                    <div class="mb-4 form-check form-switch bg-light p-3 rounded border">
-                        <input class="form-check-input ms-0 me-3" type="checkbox" name="is_enabled" id="switchIsEnabled" value="1" {{ $setting->is_enabled ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold text-dark cursor-pointer" for="switchIsEnabled">
-                            Enable Remote Data Push Service
-                        </label>
+                    <!-- Enable Remote Data Push Service Functionality Box -->
+                    <div class="p-3 bg-light rounded border mb-4">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input ms-0 me-3" type="checkbox" name="is_enabled" id="switchIsEnabled" value="1" {{ $setting->is_enabled ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold text-dark cursor-pointer font-size-15" for="switchIsEnabled">
+                                Enable Remote Data Push Service
+                            </label>
+                        </div>
+                        <p class="font-size-12 text-muted mb-0">
+                            <strong>Functionality Explanation:</strong><br>
+                            • <strong>ON (Checked)</strong>: Automatic data push is ACTIVE. Realtime punch events and scheduled hourly/daily background jobs will automatically transmit data to your remote server using your saved authentication headers.<br>
+                            • <strong>OFF (Unchecked)</strong>: Automatic pushes are PAUSED. No background jobs will fire, but you can still use "Test Remote Push Now" manually anytime.
+                        </p>
                     </div>
 
                     <button type="submit" class="btn btn-success px-4 fw-bold">
@@ -251,6 +266,9 @@
         const boxApiKey = document.getElementById('authApiKeyBox');
         const boxBasic = document.getElementById('authBasicBox');
 
+        const selectPushSchedule = document.getElementById('selectPushSchedule');
+        const boxScheduledTime = document.getElementById('boxScheduledTime');
+
         const selectDataFormat = document.getElementById('selectDataFormat');
         const selectDateFormat = document.getElementById('selectDateFormat');
         
@@ -273,6 +291,11 @@
             boxBearer.style.display = (val === 'bearer') ? 'block' : 'none';
             boxApiKey.style.display = (val === 'api_key') ? 'block' : 'none';
             boxBasic.style.display = (val === 'basic') ? 'block' : 'none';
+        }
+
+        function toggleScheduleBox() {
+            if (!selectPushSchedule) return;
+            boxScheduledTime.style.display = (selectPushSchedule.value === 'daily') ? 'block' : 'none';
         }
 
         function getSampleTimestamp(format) {
@@ -370,6 +393,7 @@
 
         // Attach Event Listeners
         selectAuth?.addEventListener('change', toggleAuthBoxes);
+        selectPushSchedule?.addEventListener('change', toggleScheduleBox);
         selectDataFormat?.addEventListener('change', updateLivePayloadPreview);
         selectDateFormat?.addEventListener('change', updateLivePayloadPreview);
 
@@ -378,6 +402,7 @@
         });
 
         toggleAuthBoxes();
+        toggleScheduleBox();
         updateLivePayloadPreview();
     });
 </script>

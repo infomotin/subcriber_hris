@@ -27,6 +27,7 @@ class WebhookPushController extends Controller
             ['tenant_id' => $tenant->id],
             [
                 'push_schedule' => 'realtime',
+                'scheduled_time' => '23:00',
                 'data_format' => 'json',
                 'date_format' => 'Y-m-d H:i:s',
                 'custom_mapping' => [
@@ -58,6 +59,7 @@ class WebhookPushController extends Controller
         $validated = $request->validate([
             'endpoint_url' => 'nullable|url|max:500',
             'push_schedule' => 'required|in:realtime,hourly,daily,manual',
+            'scheduled_time' => 'nullable|string|max:5',
             'data_format' => 'required|in:json,csv,excel',
             'date_format' => 'required|string|max:50',
             'custom_mapping' => 'nullable|array',
@@ -74,7 +76,7 @@ class WebhookPushController extends Controller
         $setting->update($validated);
 
         return redirect()->route('subscriber.webhook.index')
-            ->with('success', 'External Server Data Push & Custom Mapping settings updated successfully.');
+            ->with('success', 'External Server Data Push & Schedule settings updated successfully.');
     }
 
     public function testPush(Request $request)
