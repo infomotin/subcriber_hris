@@ -54,6 +54,7 @@
             z-index: 1001;
             transition: all 0.3s ease;
             box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+            overflow-y: auto;
         }
 
         .navbar-brand-box {
@@ -261,22 +262,73 @@
     <!-- Left Sidebar -->
     <div id="vertical-menu">
         <div class="navbar-brand-box">
-            <a href="{{ route('admin.dashboard') }}" class="brand-logo">
-                <i class="bx bx-fingerprint"></i>
-                <span>ZKTeco ADMS</span>
+            <a href="{{ auth()->user()?->hasRole('System Admin') ? route('admin.system.dashboard') : route('admin.dashboard') }}" class="brand-logo">
+                <i class="bx bx-shield-quarter text-warning"></i>
+                <span>ADMS Control</span>
             </a>
         </div>
 
         <ul class="sidebar-menu">
-            <li class="menu-title">Main</li>
-            <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <a href="{{ route('admin.dashboard') }}">
-                    <i class="bx bx-home-circle"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            @if(auth()->user()?->hasRole('System Admin'))
+                <!-- System Admin Specific Sidebar Navigation -->
+                <li class="menu-title">System Admin Navigation</li>
+                <li class="{{ request()->routeIs('admin.system.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.dashboard') }}">
+                        <i class="bx bx-home-circle text-warning"></i>
+                        <span>System Overview</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.users.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.users.index') }}">
+                        <i class="bx bx-user-voice"></i>
+                        <span>User Manager (SaaS)</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.roles.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.roles.index') }}">
+                        <i class="bx bx-key"></i>
+                        <span>Role & Permissions</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.website.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.website.index') }}">
+                        <i class="bx bx-globe"></i>
+                        <span>Website Manager</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.monitoring.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.monitoring.index') }}">
+                        <i class="bx bx-line-chart"></i>
+                        <span>System Monitoring</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.database.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.database.index') }}">
+                        <i class="bx bx-data"></i>
+                        <span>Databases Audit</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.security.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.security.index') }}">
+                        <i class="bx bx-shield-x"></i>
+                        <span>System Security Audit</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.gateways.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.gateways.index') }}">
+                        <i class="bx bx-cog"></i>
+                        <span>Gateway Configuration</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('admin.system.network.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.system.network.index') }}">
+                        <i class="bx bx-wifi"></i>
+                        <span>Network & ADMS</span>
+                    </a>
+                </li>
+            @endif
 
-            <li class="menu-title">Management</li>
+            <li class="menu-title">Hardware & Device Operations</li>
             <li class="{{ request()->routeIs('admin.devices.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.devices.index') }}">
                     <i class="bx bx-devices"></i>
@@ -292,21 +344,13 @@
             <li class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.users.index') }}">
                     <i class="bx bx-user-check"></i>
-                    <span>Biometric Users</span>
+                    <span>Biometric Device Users</span>
                 </a>
             </li>
-
-            <li class="menu-title">System</li>
             <li class="{{ request()->routeIs('admin.commands.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.commands.index') }}">
                     <i class="bx bx-terminal"></i>
                     <span>Command Queue</span>
-                </a>
-            </li>
-            <li class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.settings.index') }}">
-                    <i class="bx bx-cog"></i>
-                    <span>Network Settings</span>
                 </a>
             </li>
         </ul>
@@ -332,8 +376,9 @@
                     <span class="fw-medium text-dark font-size-14">{{ auth()->user()->name ?? 'User Account' }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ route('home') }}"><i class="bx bx-home-alt me-2"></i> Public Home</a></li>
-                    <li><a class="dropdown-item" href="{{ route('admin.settings.index') }}"><i class="bx bx-cog me-2"></i> Settings</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.system.dashboard') }}"><i class="bx bx-shield-quarter me-2"></i> System Admin Panel</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.system.users.index') }}"><i class="bx bx-user-voice me-2"></i> User Manager</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.system.monitoring.index') }}"><i class="bx bx-line-chart me-2"></i> System Monitoring</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form action="{{ route('logout') }}" method="POST">

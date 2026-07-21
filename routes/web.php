@@ -22,6 +22,14 @@ use App\Http\Controllers\Subscriber\SubscriptionCheckoutController;
 use App\Http\Controllers\Subscriber\UserController as SubscriberUserController;
 use App\Http\Controllers\Subscriber\WebhookPushController;
 use App\Http\Controllers\SystemAdmin\DashboardController as SystemAdminDashboardController;
+use App\Http\Controllers\SystemAdmin\DatabaseManagerController;
+use App\Http\Controllers\SystemAdmin\GatewayConfigController;
+use App\Http\Controllers\SystemAdmin\NetworkManagerController;
+use App\Http\Controllers\SystemAdmin\RolePermissionController;
+use App\Http\Controllers\SystemAdmin\SaasUserController;
+use App\Http\Controllers\SystemAdmin\SecurityAuditController;
+use App\Http\Controllers\SystemAdmin\SystemMonitoringController;
+use App\Http\Controllers\SystemAdmin\WebsiteManagerController;
 use App\Http\Middleware\EnsureAdminRole;
 use Illuminate\Support\Facades\Route;
 
@@ -122,10 +130,47 @@ Route::middleware(['auth'])->group(function () {
 
     // Protected Admin Routes (Strictly Restricted to System Admin & Business Admin)
     Route::middleware([EnsureAdminRole::class])->group(function () {
+
         // System Admin Panel Routes (/admin/system/*)
         Route::prefix('admin/system')->name('admin.system.')->group(function () {
             Route::get('/', [SystemAdminDashboardController::class, 'index'])->name('dashboard');
             Route::get('/dashboard', [SystemAdminDashboardController::class, 'index']);
+
+            // User Manager (SaaS Application Users)
+            Route::resource('users', SaasUserController::class);
+
+            // Role & Permissions Matrix
+            Route::get('/roles', [RolePermissionController::class, 'index'])->name('roles.index');
+            Route::post('/roles', [RolePermissionController::class, 'storeRole'])->name('roles.store');
+            Route::put('/roles/{role}', [RolePermissionController::class, 'updateRolePermissions'])->name('roles.update');
+
+            // Website Manager
+            Route::get('/website', [WebsiteManagerController::class, 'index'])->name('website.index');
+            Route::post('/website', [WebsiteManagerController::class, 'update'])->name('website.update');
+
+            // System Monitoring (Logs by Category, Realtime Requests, Health)
+            Route::get('/monitoring', [SystemMonitoringController::class, 'index'])->name('monitoring.index');
+
+            // Databases Audit
+            Route::get('/database', [DatabaseManagerController::class, 'index'])->name('database.index');
+            Route::post('/database/backup', [DatabaseManagerController::class, 'backup'])->name('database.backup');
+
+            // System Security Audit
+            Route::get('/security', [SecurityAuditController::class, 'index'])->name('security.index');
+            Route::post('/security/block-ip', [SecurityAuditController::class, 'blockIp'])->name('security.block_ip');
+            Route::post('/security/unblock-ip', [SecurityAuditController::class, 'unblockIp'])->name('security.unblock_ip');
+
+            // Gateway Configuration (SMS, Mail & SSLCommerz)
+            Route::get('/gateways', [GatewayConfigController::class, 'index'])->name('gateways.index');
+            Route::post('/gateways/sms', [GatewayConfigController::class, 'updateSms'])->name('gateways.update_sms');
+            Route::post('/gateways/sms/test', [GatewayConfigController::class, 'testSms'])->name('gateways.test_sms');
+            Route::post('/gateways/mail', [GatewayConfigController::class, 'updateMail'])->name('gateways.update_mail');
+            Route::post('/gateways/mail/test', [GatewayConfigController::class, 'testMail'])->name('gateways.test_mail');
+            Route::post('/gateways/sslcommerz', [GatewayConfigController::class, 'updateSslcommerz'])->name('gateways.update_sslcommerz');
+
+            // Network Settings & ADMS Listener
+            Route::get('/network', [NetworkManagerController::class, 'index'])->name('network.index');
+            Route::post('/network', [NetworkManagerController::class, 'update'])->name('network.update');
         });
 
         // Business Admin Panel Routes (/admin/business/*)
@@ -143,6 +188,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Legacy Admin Dashboard Routes
         Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/', [DashboardController::class, 'index']);
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
             // Devices

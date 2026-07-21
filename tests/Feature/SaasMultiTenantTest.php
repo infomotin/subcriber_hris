@@ -79,6 +79,23 @@ class SaasMultiTenantTest extends TestCase
         $this->actingAs($subscriberUser)->get('/subscriber/plans')->assertStatus(200);
     }
 
+    public function test_system_admin_panel_routes_access(): void
+    {
+        Role::create(['name' => 'System Admin']);
+        $sysAdminUser = User::factory()->create();
+        $sysAdminUser->assignRole('System Admin');
+
+        $this->actingAs($sysAdminUser)->get('/admin/system/dashboard')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/users')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/roles')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/website')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/monitoring')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/database')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/security')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/gateways')->assertStatus(200);
+        $this->actingAs($sysAdminUser)->get('/admin/system/network')->assertStatus(200);
+    }
+
     public function test_subscriber_external_webhook_push_execution(): void
     {
         Http::fake([
