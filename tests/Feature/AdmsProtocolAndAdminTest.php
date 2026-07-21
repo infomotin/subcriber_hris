@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\AttendanceLog;
 use App\Models\Device;
 use App\Models\DeviceCommand;
+use App\Models\User;
 use App\Models\ZktecoUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdmsProtocolAndAdminTest extends TestCase
@@ -106,12 +108,16 @@ class AdmsProtocolAndAdminTest extends TestCase
 
     public function test_admin_dashboard_and_views_render_successfully(): void
     {
+        Role::create(['name' => 'System Admin']);
+        $adminUser = User::factory()->create();
+        $adminUser->assignRole('System Admin');
+
         $this->get('/')->assertStatus(200);
-        $this->get('/admin/dashboard')->assertStatus(200);
-        $this->get('/admin/devices')->assertStatus(200);
-        $this->get('/admin/attendance')->assertStatus(200);
-        $this->get('/admin/users')->assertStatus(200);
-        $this->get('/admin/commands')->assertStatus(200);
-        $this->get('/admin/settings')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/dashboard')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/devices')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/attendance')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/users')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/commands')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/settings')->assertStatus(200);
     }
 }

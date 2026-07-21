@@ -328,13 +328,21 @@
         <div class="d-flex align-items-center gap-3">
             <div class="dropdown">
                 <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 border-0" type="button" data-bs-toggle="dropdown">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=556ee6&color=fff" class="rounded-circle" width="32" height="32" alt="Admin">
-                    <span class="fw-medium text-dark font-size-14">Administrator</span>
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=556ee6&color=fff" class="rounded-circle" width="32" height="32" alt="User">
+                    <span class="fw-medium text-dark font-size-14">{{ auth()->user()->name ?? 'User Account' }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ route('home') }}"><i class="bx bx-home-alt me-2"></i> Public Home</a></li>
                     <li><a class="dropdown-item" href="{{ route('admin.settings.index') }}"><i class="bx bx-cog me-2"></i> Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#"><i class="bx bx-power-off me-2"></i> Logout</a></li>
+                    <li>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                                <i class="bx bx-power-off me-2"></i> Logout
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

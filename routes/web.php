@@ -6,50 +6,168 @@ use App\Http\Controllers\Admin\DeviceCommandController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\NetworkSettingController;
 use App\Http\Controllers\Admin\ZktecoUserController;
-use App\Http\Controllers\Adms\CDataController;
 use App\Http\Controllers\Adms\DeviceCmdController;
 use App\Http\Controllers\Adms\GetRequestController;
+use App\Http\Controllers\Adms\TenantCDataController;
+use App\Http\Controllers\Api\MockRemoteServerController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BusinessAdmin\PackagePlanController;
+use App\Http\Controllers\BusinessAdmin\SubscriberController;
+use App\Http\Controllers\Demo\DemoController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Subscriber\AttendanceController as SubscriberAttendanceController;
+use App\Http\Controllers\Subscriber\DashboardController as SubscriberDashboardController;
+use App\Http\Controllers\Subscriber\DeviceController as SubscriberDeviceController;
+use App\Http\Controllers\Subscriber\SubscriptionCheckoutController;
+use App\Http\Controllers\Subscriber\UserController as SubscriberUserController;
+use App\Http\Controllers\Subscriber\WebhookPushController;
+use App\Http\Controllers\SystemAdmin\DashboardController as SystemAdminDashboardController;
+use App\Http\Middleware\EnsureAdminRole;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| ZKTeco ADMS Device Communication Protocol Endpoints
+| Public Home Landing Page
 |--------------------------------------------------------------------------
 */
-Route::any('/iclock/cdata', CDataController::class)->name('adms.cdata');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::get('/register', [LoginController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [LoginController::class, 'register']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| ZKTeco ADMS Device Communication Endpoints (Public for Physical Machines)
+|--------------------------------------------------------------------------
+*/
+Route::any('/iclock/{token}/cdata', TenantCDataController::class)->name('adms.token.cdata');
+Route::get('/iclock/{token}/getrequest', GetRequestController::class)->name('adms.token.getrequest');
+Route::post('/iclock/{token}/devicecmd', DeviceCmdController::class)->name('adms.token.devicecmd');
+
+Route::any('/iclock/cdata', TenantCDataController::class)->name('adms.cdata');
 Route::get('/iclock/getrequest', GetRequestController::class)->name('adms.getrequest');
 Route::post('/iclock/devicecmd', DeviceCmdController::class)->name('adms.devicecmd');
 
 /*
 |--------------------------------------------------------------------------
-| Custom Skote Admin Dashboard Routes
+| Mock External Remote Server Endpoints (For Testing Data Push Webhooks)
 |--------------------------------------------------------------------------
 */
-Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+Route::post('/api/mock-remote-server/no-auth', [MockRemoteServerController::class, 'receiveNoAuth']);
+Route::post('/api/mock-remote-server/bearer', [MockRemoteServerController::class, 'receiveBearer']);
+Route::post('/api/mock-remote-server/api-key', [MockRemoteServerController::class, 'receiveApiKey']);
+Route::post('/api/mock-remote-server/basic', [MockRemoteServerController::class, 'receiveBasic']);
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Public Demo Sandbox Routes (/demo)
+|--------------------------------------------------------------------------
+*/
+Route::get('/demo', [DemoController::class, 'index'])->name('demo.dashboard');
+Route::post('/demo/destroy', [DemoController::class, 'destroyDemoSession'])->name('demo.destroy');
 
-    // Devices
-    Route::resource('devices', DeviceController::class);
-    Route::post('devices/{device}/reboot', [DeviceController::class, 'reboot'])->name('devices.reboot');
-    Route::post('devices/{device}/clear-logs', [DeviceController::class, 'clearLogs'])->name('devices.clear-logs');
-    Route::post('devices/{device}/query-info', [DeviceController::class, 'queryInfo'])->name('devices.query-info');
+/*
+|--------------------------------------------------------------------------
+| SSLCommerz Callbacks
+|--------------------------------------------------------------------------
+*/
+Route::prefix('subscription/ssl')->name('subscription.ssl.')->group(function () {
+    Route::get('/checkout', [SubscriptionCheckoutController::class, 'mockCheckout'])->name('mock_checkout');
+    Route::post('/success', [SubscriptionCheckoutController::class, 'success'])->name('success');
+    Route::post('/fail', [SubscriptionCheckoutController::class, 'fail'])->name('fail');
+    Route::post('/cancel', [SubscriptionCheckoutController::class, 'cancel'])->name('cancel');
+    Route::post('/ipn', [SubscriptionCheckoutController::class, 'success'])->name('ipn');
+});
 
-    // Attendance Logs & Export
-    Route::get('attendance', [AttendanceLogController::class, 'index'])->name('attendance.index');
-    Route::get('attendance/export', [AttendanceLogController::class, 'export'])->name('attendance.export');
+/*
+|--------------------------------------------------------------------------
+| Protected Dashboard Routes (Authentication Required)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
 
-    // Biometric Users
-    Route::resource('users', ZktecoUserController::class);
-    Route::post('users/{user}/push/{device}', [ZktecoUserController::class, 'pushToDevice'])->name('users.push');
+    // Dedicated Subscriber Panel Routes (/subscriber/*)
+    Route::prefix('subscriber')->name('subscriber.')->group(function () {
+        Route::get('/', [SubscriberDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [SubscriberDashboardController::class, 'index']);
 
-    // Device Commands Queue
-    Route::get('commands', [DeviceCommandController::class, 'index'])->name('commands.index');
-    Route::delete('commands/{command}', [DeviceCommandController::class, 'destroy'])->name('commands.destroy');
+        // Subscriber Dedicated Scoped Views & Device Store
+        Route::get('/devices', [SubscriberDeviceController::class, 'index'])->name('devices.index');
+        Route::post('/devices', [SubscriberDeviceController::class, 'store'])->name('devices.store');
+        Route::get('/attendance', [SubscriberAttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/export', [SubscriberAttendanceController::class, 'export'])->name('attendance.export');
+        Route::get('/users', [SubscriberUserController::class, 'index'])->name('users.index');
 
-    // Network & System Settings
-    Route::get('settings', [NetworkSettingController::class, 'index'])->name('settings.index');
-    Route::post('settings', [NetworkSettingController::class, 'update'])->name('settings.update');
-    Route::post('settings/test-connection', [NetworkSettingController::class, 'testConnection'])->name('settings.test-connection');
+        // Webhook Data Push to External Server
+        Route::get('/webhook', [WebhookPushController::class, 'index'])->name('webhook.index');
+        Route::post('/webhook', [WebhookPushController::class, 'update'])->name('webhook.update');
+        Route::post('/webhook/test', [WebhookPushController::class, 'testPush'])->name('webhook.test');
+
+        // Mock Remote Server Viewer
+        Route::get('/mock-remote-viewer', [MockRemoteServerController::class, 'viewReceivedPayloads'])->name('mock.viewer');
+        Route::post('/mock-remote-clear', [MockRemoteServerController::class, 'clearReceivedPayloads'])->name('mock.clear');
+
+        // Plans & Checkout
+        Route::get('/plans', [SubscriptionCheckoutController::class, 'plans'])->name('plans');
+        Route::post('/checkout', [SubscriptionCheckoutController::class, 'checkout'])->name('checkout');
+    });
+
+    // Protected Admin Routes (Strictly Restricted to System Admin & Business Admin)
+    Route::middleware([EnsureAdminRole::class])->group(function () {
+        // System Admin Panel Routes (/admin/system/*)
+        Route::prefix('admin/system')->name('admin.system.')->group(function () {
+            Route::get('/', [SystemAdminDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/dashboard', [SystemAdminDashboardController::class, 'index']);
+        });
+
+        // Business Admin Panel Routes (/admin/business/*)
+        Route::prefix('admin/business')->name('admin.business.')->group(function () {
+            Route::get('/', [SubscriberController::class, 'index'])->name('dashboard');
+
+            // Subscriber Management
+            Route::resource('subscribers', SubscriberController::class);
+            Route::post('subscribers/{tenant}/reset-password', [SubscriberController::class, 'resetPassword'])->name('subscribers.reset_password');
+            Route::post('subscribers/{tenant}/toggle-status', [SubscriberController::class, 'toggleStatus'])->name('subscribers.toggle_status');
+
+            // Package Plans
+            Route::resource('plans', PackagePlanController::class);
+        });
+
+        // Legacy Admin Dashboard Routes
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+            // Devices
+            Route::resource('devices', DeviceController::class);
+            Route::post('devices/{device}/reboot', [DeviceController::class, 'reboot'])->name('devices.reboot');
+            Route::post('devices/{device}/clear-logs', [DeviceController::class, 'clearLogs'])->name('devices.clear-logs');
+            Route::post('devices/{device}/query-info', [DeviceController::class, 'queryInfo'])->name('devices.query-info');
+
+            // Attendance Logs & Export
+            Route::get('attendance', [AttendanceLogController::class, 'index'])->name('attendance.index');
+            Route::get('attendance/export', [AttendanceLogController::class, 'export'])->name('attendance.export');
+
+            // Biometric Users
+            Route::resource('users', ZktecoUserController::class);
+            Route::post('users/{user}/push/{device}', [ZktecoUserController::class, 'pushToDevice'])->name('users.push');
+
+            // Device Commands Queue
+            Route::get('commands', [DeviceCommandController::class, 'index'])->name('commands.index');
+            Route::delete('commands/{command}', [DeviceCommandController::class, 'destroy'])->name('commands.destroy');
+
+            // Network & System Settings
+            Route::get('settings', [NetworkSettingController::class, 'index'])->name('settings.index');
+            Route::post('settings', [NetworkSettingController::class, 'update'])->name('settings.update');
+            Route::post('settings/test-connection', [NetworkSettingController::class, 'testConnection'])->name('settings.test-connection');
+        });
+    });
+
 });
