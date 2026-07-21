@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\AttendanceLog;
 use App\Models\TenantPushLog;
 use App\Models\TenantWebhookSetting;
+use Illuminate\Http\Request as LaravelRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ExternalPushService
 {
@@ -31,10 +31,23 @@ class ExternalPushService
 
         $formattedData = $this->formatPayload($setting, $logs);
 
-        try {
-            $httpClient = Http::timeout(15);
+        // Check if endpoint is local mock server or local domain to prevent single-worker FastCGI deadlock
+        $parsedUrl = parse_url($setting->endpoint_url);
+        $host = $parsedUrl['host'] ?? '';
+        $path = $parsedUrl['path'] ?? '/';
 
-            // Configure Authentication
+        $isLocalEndpoint = in_array($host, ['amds.test', 'localhost', '127.0.0.1'])
+            || str_contains($setting->endpoint_url, 'api/mock-remote-server');
+
+        if ($isLocalEndpoint) {
+            return $this->dispatchInternalMockPush($setting, $path, $formattedData, $logs);
+        }
+
+        // External HTTP cURL dispatch
+        try {
+            $httpClient = Http::timeout(10);
+
+            // Configure Authentication Headers
             switch ($setting->auth_type) {
                 case 'bearer':
                     if ($setting->auth_token) {
@@ -83,6 +96,71 @@ class ExternalPushService
         ]);
 
         // Save log entry
+        TenantPushLog::create([
+            'tenant_id' => $setting->tenant_id,
+            'endpoint_url' => $setting->endpoint_url,
+            'data_format' => $setting->data_format,
+            'records_count' => $logs->count(),
+            'status_code' => $statusCode,
+            'response_body' => $responseBody,
+            'is_success' => $isSuccess,
+        ]);
+
+        return [
+            'success' => $isSuccess,
+            'status_code' => $statusCode,
+            'response_body' => $responseBody,
+            'records_count' => $logs->count(),
+        ];
+    }
+
+    protected function dispatchInternalMockPush(TenantWebhookSetting $setting, string $path, mixed $formattedData, Collection $logs): array
+    {
+        $content = is_string($formattedData) ? $formattedData : json_encode($formattedData);
+        $contentType = (is_string($formattedData) && ($setting->data_format === 'csv' || $setting->data_format === 'text'))
+            ? 'text/plain'
+            : 'application/json';
+
+        $server = [
+            'CONTENT_TYPE' => $contentType,
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_HOST' => 'amds.test',
+        ];
+
+        // Attach Auth Headers
+        switch ($setting->auth_type) {
+            case 'bearer':
+                if ($setting->auth_token) {
+                    $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $setting->auth_token;
+                }
+                break;
+            case 'api_key':
+                if ($setting->auth_header_name && $setting->auth_token) {
+                    $headerKey = 'HTTP_' . strtoupper(str_replace('-', '_', $setting->auth_header_name));
+                    $server[$headerKey] = $setting->auth_token;
+                }
+                break;
+            case 'basic':
+                if ($setting->auth_username) {
+                    $server['PHP_AUTH_USER'] = $setting->auth_username;
+                    $server['PHP_AUTH_PW'] = $setting->auth_password ?? '';
+                }
+                break;
+        }
+
+        $internalRequest = LaravelRequest::create($path, 'POST', [], [], [], $server, $content);
+        $response = app()->handle($internalRequest);
+
+        $statusCode = $response->getStatusCode();
+        $responseBody = mb_strimwidth($response->getContent(), 0, 1000, '...');
+        $isSuccess = $response->isSuccessful();
+
+        $setting->update([
+            'last_pushed_at' => now(),
+            'last_status_code' => $statusCode,
+            'last_response_body' => $responseBody,
+        ]);
+
         TenantPushLog::create([
             'tenant_id' => $setting->tenant_id,
             'endpoint_url' => $setting->endpoint_url,
