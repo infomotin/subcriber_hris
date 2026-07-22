@@ -11,6 +11,7 @@ use App\Http\Controllers\Adms\GetRequestController;
 use App\Http\Controllers\Adms\TenantCDataController;
 use App\Http\Controllers\Api\MockRemoteServerController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BusinessAdmin\PackagePlanController;
 use App\Http\Controllers\BusinessAdmin\SubscriberController;
 use App\Http\Controllers\Demo\DemoController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\SystemAdmin\SecurityAuditController;
 use App\Http\Controllers\SystemAdmin\SystemMonitoringController;
 use App\Http\Controllers\SystemAdmin\WebsiteManagerController;
 use App\Http\Middleware\EnsureAdminRole;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,6 +52,17 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [LoginController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Two-Factor Authentication Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/two-factor/challenge', [TwoFactorController::class, 'showChallenge'])->name('two-factor.challenge');
+    Route::post('/two-factor/send-otp', [TwoFactorController::class, 'resendOtp'])->name('two-factor.send-otp');
+    Route::post('/two-factor/verify', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -100,7 +113,17 @@ Route::prefix('subscription/ssl')->name('subscription.ssl.')->group(function () 
 | Protected Dashboard Routes (Authentication Required)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'two-factor'])->group(function () {
+
+    // Role-based dashboard redirect
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        if ($user->hasRole('System Admin')) return redirect()->route('admin.system.dashboard');
+        if ($user->hasRole('Business Admin')) return redirect()->route('admin.business.dashboard');
+        if ($user->hasRole('Subscriber')) return redirect()->route('subscriber.dashboard');
+        if ($user->hasRole('Demo User')) return redirect()->route('demo.dashboard');
+        return redirect('/');
+    })->name('dashboard');
 
     // Dedicated Subscriber Panel Routes (/subscriber/*)
     Route::prefix('subscriber')->name('subscriber.')->group(function () {
@@ -163,6 +186,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/security', [SecurityAuditController::class, 'index'])->name('security.index');
             Route::post('/security/block-ip', [SecurityAuditController::class, 'blockIp'])->name('security.block_ip');
             Route::post('/security/unblock-ip', [SecurityAuditController::class, 'unblockIp'])->name('security.unblock_ip');
+            Route::post('/security/update', [SecurityAuditController::class, 'updateSecurity'])->name('security.update');
 
             // Gateway Configuration (SMS, Mail & SSLCommerz)
             Route::get('/gateways', [GatewayConfigController::class, 'index'])->name('gateways.index');

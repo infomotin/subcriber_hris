@@ -27,6 +27,14 @@
 
     <form action="{{ route('register') }}" method="POST">
         @csrf
+
+        @if(isset($securityConfig) && $securityConfig->honeypot_enabled)
+            <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                <input type="text" name="hp_name" tabindex="-1" autocomplete="off">
+                <input type="hidden" name="hp_time" value="{{ time() }}">
+            </div>
+        @endif
+
         <div class="mb-3">
             <label class="form-label text-white">Company / Organization Name</label>
             <input type="text" name="name" class="form-control bg-dark border-secondary text-white" required placeholder="e.g. Acme Corporation" value="{{ old('name') }}">
@@ -58,6 +66,16 @@
                 @endforeach
             </select>
         </div>
+
+        @if(isset($securityConfig) && $securityConfig->captcha_enabled)
+            <div class="mb-3 bg-light p-3 rounded border">
+                <label class="form-label fw-bold text-dark mb-2"><i class="bx bx-calculator me-1"></i> Math Verification</label>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-dark font-size-16">{{ $captchaData['question'] }}</span>
+                    <input type="number" name="captcha_answer" class="form-control form-control-sm w-25" placeholder="?" required>
+                </div>
+            </div>
+        @endif
 
         <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Create SaaS Account</button>
     </form>

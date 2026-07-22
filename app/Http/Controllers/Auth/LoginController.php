@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\GatewayConfig;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\User;
@@ -15,19 +16,70 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login');
+        $securityConfig = GatewayConfig::find(1);
+
+        $captchaData = $this->generateCaptcha();
+
+        return view('auth.login', compact('securityConfig', 'captchaData'));
+    }
+
+    private function generateCaptcha(): array
+    {
+        $a = rand(1, 20);
+        $b = rand(1, 20);
+        $op = ['+', '-'][array_rand(['+', '-'])];
+        $result = $op === '+' ? $a + $b : $a - $b;
+
+        session()->put('captcha_result', $result);
+
+        return [
+            'question' => "{$a} {$op} {$b} = ?",
+        ];
     }
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $rules = [
             'email' => 'required|email',
             'password' => 'required|string',
-        ]);
+        ];
+
+        $config = GatewayConfig::find(1);
+
+        if ($config && $config->captcha_enabled) {
+            $rules['captcha_answer'] = 'required|integer';
+        }
+
+        $credentials = $request->validate($rules);
+
+        if ($config && $config->captcha_enabled) {
+            $expected = $request->session()->get('captcha_result');
+            if ((int) $request->input('captcha_answer') !== $expected) {
+                return back()->withErrors(['captcha' => 'Incorrect math answer. Please try again.'])
+                    ->onlyInput('email');
+            }
+        }
+
+        if ($config && $config->honeypot_enabled) {
+            if ($request->input('hp_name') !== '' || $request->input('hp_time') === '') {
+                return back()->withErrors(['email' => 'Invalid request.'])->onlyInput('email');
+            }
+
+            $hpTime = (int) $request->input('hp_time');
+            if (time() - $hpTime < 3) {
+                return back()->withErrors(['email' => 'Please wait a moment before submitting.'])->onlyInput('email');
+            }
+        }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
+
+            $request->session()->forget('two_factor_verified');
+
+            if ($config && $config->two_factor_enabled) {
+                return redirect()->route('two-factor.challenge');
+            }
 
             return $this->redirectUserByRole($user);
         }
@@ -40,17 +92,48 @@ class LoginController extends Controller
     public function showRegisterForm()
     {
         $plans = SubscriptionPlan::where('status', 'active')->get();
-        return view('auth.register', compact('plans'));
+        $securityConfig = GatewayConfig::find(1);
+
+        $captchaData = $this->generateCaptcha();
+
+        return view('auth.register', compact('plans', 'securityConfig', 'captchaData'));
     }
 
     public function register(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'subscription_plan_id' => 'required|exists:subscription_plans,id',
-        ]);
+        ];
+
+        $config = GatewayConfig::find(1);
+
+        if ($config && $config->captcha_enabled) {
+            $rules['captcha_answer'] = 'required|integer';
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($config && $config->captcha_enabled) {
+            $expected = $request->session()->get('captcha_result');
+            if ((int) $request->input('captcha_answer') !== $expected) {
+                return back()->withErrors(['captcha' => 'Incorrect math answer. Please try again.'])
+                    ->onlyInput('name', 'email');
+            }
+        }
+
+        if ($config && $config->honeypot_enabled) {
+            if ($request->input('hp_name') !== '' || $request->input('hp_time') === '') {
+                return back()->withErrors(['name' => 'Invalid request.'])->onlyInput('name', 'email');
+            }
+
+            $hpTime = (int) $request->input('hp_time');
+            if (time() - $hpTime < 3) {
+                return back()->withErrors(['name' => 'Please wait a moment before submitting.'])->onlyInput('name', 'email');
+            }
+        }
 
         $plan = SubscriptionPlan::findOrFail($request->subscription_plan_id);
 

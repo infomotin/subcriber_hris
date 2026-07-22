@@ -6,7 +6,67 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1"><i class="bx bx-shield-x text-danger me-2 font-size-22"></i> System Security Audit & IP Lockout</h4>
-        <p class="text-muted font-size-13 mb-0">Monitor security events, failed login attempts, active sessions, and IP address blocklists.</p>
+        <p class="text-muted font-size-13 mb-0">Manage security features, monitor events, and block suspicious IP addresses.</p>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success border-0 shadow-sm mb-4">{{ session('success') }}</div>
+@endif
+
+<!-- Security Features Toggle Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-lock text-primary me-2"></i> Security Feature Toggles</h5>
+    </div>
+    <div class="card-body p-4">
+        <form action="{{ route('admin.system.security.update') }}" method="POST">
+            @csrf
+
+            <div class="row g-4">
+                <!-- 2FA -->
+                <div class="col-md-4">
+                    <div class="form-check form-switch bg-light p-3 rounded border h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <i class="bx bx-shield-quarter fs-4 text-primary"></i>
+                            <input class="form-check-input" type="checkbox" name="two_factor_enabled" id="switch2fa" value="1" {{ $securityConfig->two_factor_enabled ? 'checked' : '' }}>
+                        </div>
+                        <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="switch2fa">Two-Factor Authentication</label>
+                        <small class="text-muted">Sends a one-time OTP code to the user's email after login.</small>
+                    </div>
+                </div>
+
+                <!-- CAPTCHA -->
+                <div class="col-md-4">
+                    <div class="form-check form-switch bg-light p-3 rounded border h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <i class="bx bx bx-calculator fs-4 text-warning"></i>
+                            <input class="form-check-input" type="checkbox" name="captcha_enabled" id="switchCaptcha" value="1" {{ $securityConfig->captcha_enabled ? 'checked' : '' }}>
+                        </div>
+                        <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="switchCaptcha">Math CAPTCHA (Chacha)</label>
+                        <small class="text-muted">Simple math sum question — no external service or API key needed.</small>
+                    </div>
+                </div>
+
+                <!-- Honeypot -->
+                <div class="col-md-4">
+                    <div class="form-check form-switch bg-light p-3 rounded border h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <i class="bx bx-hive fs-4 text-success"></i>
+                            <input class="form-check-input" type="checkbox" name="honeypot_enabled" id="switchHoneypot" value="1" {{ $securityConfig->honeypot_enabled ? 'checked' : '' }}>
+                        </div>
+                        <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="switchHoneypot">Honeypot / Honey Trap</label>
+                        <small class="text-muted">Invisible hidden form fields to trap bots on login.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-success fw-bold px-4">
+                    <i class="bx bx-save me-1"></i> Save Security Settings
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

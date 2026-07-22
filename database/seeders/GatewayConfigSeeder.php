@@ -25,6 +25,11 @@ class GatewayConfigSeeder extends Seeder
                 'sslcommerz_store_id' => 'arobw6a3cf7767fa7c',
                 'sslcommerz_store_passwd' => 'arobw6a3cf7767fa7c@ssl',
                 'sslcommerz_is_sandbox' => true,
+                'two_factor_enabled' => false,
+                'captcha_enabled' => false,
+                'captcha_site_key' => '',
+                'captcha_secret_key' => '',
+                'honeypot_enabled' => false,
             ]
         );
     }

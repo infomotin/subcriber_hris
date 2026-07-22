@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription/ssl/*',
             'subscriber/webhook*',
         ]);
+
+        $middleware->alias([
+            'two-factor' => \App\Http\Middleware\TwoFactorChallenge::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

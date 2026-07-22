@@ -23,10 +23,18 @@ class GatewayConfig extends Model
         'sslcommerz_store_id',
         'sslcommerz_store_passwd',
         'sslcommerz_is_sandbox',
+        'two_factor_enabled',
+        'captcha_enabled',
+        'captcha_site_key',
+        'captcha_secret_key',
+        'honeypot_enabled',
     ];
 
     protected $casts = [
         'mail_port' => 'integer',
         'sslcommerz_is_sandbox' => 'boolean',
+        'two_factor_enabled' => 'boolean',
+        'captcha_enabled' => 'boolean',
+        'honeypot_enabled' => 'boolean',
     ];
 }

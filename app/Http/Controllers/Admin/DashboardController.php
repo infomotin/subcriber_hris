@@ -12,19 +12,12 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Smart Redirect when hitting root /admin endpoint directly
-        if ($request->path() === 'admin') {
-            if (auth()->user()?->hasRole('System Admin')) {
-                return redirect()->route('admin.system.dashboard');
-            }
+        if (auth()->user()?->hasRole('System Admin')) {
+            return redirect()->route('admin.system.dashboard');
+        }
 
-            if (auth()->user()?->hasRole('Business Admin')) {
-                return redirect()->route('admin.business.dashboard');
-            }
-
-            if (auth()->user()?->hasRole('Subscriber')) {
-                return redirect()->route('subscriber.dashboard');
-            }
+        if (auth()->user()?->hasRole('Business Admin')) {
+            return redirect()->route('admin.business.dashboard');
         }
 
         $devices = Device::all();

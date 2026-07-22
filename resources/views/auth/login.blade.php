@@ -27,6 +27,14 @@
 
     <form action="{{ route('login') }}" method="POST">
         @csrf
+
+        @if(isset($securityConfig) && $securityConfig->honeypot_enabled)
+            <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                <input type="text" name="hp_name" tabindex="-1" autocomplete="off">
+                <input type="hidden" name="hp_time" value="{{ time() }}">
+            </div>
+        @endif
+
         <div class="mb-3">
             <label class="form-label text-white">Email Address</label>
             <input type="email" name="email" class="form-control bg-dark border-secondary text-white" required placeholder="sysadmin@amds.test" value="{{ old('email') }}">
@@ -41,6 +49,16 @@
             <input type="checkbox" name="remember" class="form-check-input" id="remember">
             <label class="form-check-label text-muted" for="remember">Remember me</label>
         </div>
+
+        @if(isset($securityConfig) && $securityConfig->captcha_enabled)
+            <div class="mb-3 bg-light p-3 rounded border">
+                <label class="form-label fw-bold text-dark mb-2"><i class="bx bx-calculator me-1"></i> Math Verification</label>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-dark font-size-16">{{ $captchaData['question'] }}</span>
+                    <input type="number" name="captcha_answer" class="form-control form-control-sm w-25" placeholder="?" required>
+                </div>
+            </div>
+        @endif
 
         <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Sign In</button>
     </form>
