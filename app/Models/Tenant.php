@@ -74,6 +74,11 @@ class Tenant extends Model
         return $this->hasMany(PaymentLog::class);
     }
 
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();

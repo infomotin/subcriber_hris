@@ -181,6 +181,15 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             // Databases Audit
             Route::get('/database', [DatabaseManagerController::class, 'index'])->name('database.index');
             Route::post('/database/backup', [DatabaseManagerController::class, 'backup'])->name('database.backup');
+            Route::post('/database/restore', [DatabaseManagerController::class, 'restore'])->name('database.restore');
+            Route::get('/database/backup/{filename}/download', [DatabaseManagerController::class, 'downloadBackup'])->name('database.backup.download');
+            Route::post('/database/backup/{filename}/delete', [DatabaseManagerController::class, 'deleteBackup'])->name('database.backup.delete');
+            Route::post('/database/execute-sql', [DatabaseManagerController::class, 'executeSql'])->name('database.execute-sql');
+            Route::get('/database/table/{table}', [DatabaseManagerController::class, 'showTable'])->name('database.table');
+            Route::post('/database/table/{table}/insert', [DatabaseManagerController::class, 'insertRow'])->name('database.table.insert');
+            Route::post('/database/table/{table}/{id}/update', [DatabaseManagerController::class, 'updateRow'])->name('database.table.update');
+            Route::post('/database/table/{table}/{id}/delete', [DatabaseManagerController::class, 'deleteRow'])->name('database.table.delete');
+            Route::get('/database/export-tenant/{tenant}', [DatabaseManagerController::class, 'exportTenantData'])->name('database.export-tenant');
 
             // System Security Audit
             Route::get('/security', [SecurityAuditController::class, 'index'])->name('security.index');
