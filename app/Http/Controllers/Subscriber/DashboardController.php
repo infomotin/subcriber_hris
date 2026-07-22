@@ -59,4 +59,36 @@ class DashboardController extends Controller
             'recentLogs'
         ));
     }
+
+    public function stats()
+    {
+        $user = auth()->user();
+        $tenant = $user?->tenant ?? Tenant::first();
+        if (! $tenant) {
+            return response()->json(['error' => 'No tenant'], 404);
+        }
+
+        app()->instance('current_tenant_id', $tenant->id);
+
+        $todayPunches = AttendanceLog::whereDate('punched_at', today())->count();
+
+        $recentLogs = AttendanceLog::with(['device', 'zktecoUser'])
+            ->orderBy('punched_at', 'desc')
+            ->take(10)
+            ->get()
+            ->map(fn ($log) => [
+                'id' => $log->id,
+                'pin' => $log->pin,
+                'user_name' => $log->zktecoUser->name ?? 'User #' . $log->pin,
+                'device_serial' => $log->device->serial_number ?? 'N/A',
+                'punched_at' => $log->punched_at->format('M d, Y h:i:s A'),
+                'status_label' => $log->status_label,
+                'verify_type_label' => $log->verify_type_label,
+            ]);
+
+        return response()->json([
+            'today_punches' => $todayPunches,
+            'recent_logs' => $recentLogs,
+        ]);
+    }
 }

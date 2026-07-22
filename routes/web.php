@@ -123,6 +123,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mock-remote-viewer', [MockRemoteServerController::class, 'viewReceivedPayloads'])->name('mock.viewer');
         Route::post('/mock-remote-clear', [MockRemoteServerController::class, 'clearReceivedPayloads'])->name('mock.clear');
 
+        // Real-time Attendance Feed (JSON for AJAX polling)
+        Route::get('/attendance/live', [SubscriberAttendanceController::class, 'live'])->name('attendance.live');
+        Route::get('/dashboard/stats', [SubscriberDashboardController::class, 'stats'])->name('dashboard.stats');
+
         // Plans & Checkout
         Route::get('/plans', [SubscriptionCheckoutController::class, 'plans'])->name('plans');
         Route::post('/checkout', [SubscriptionCheckoutController::class, 'checkout'])->name('checkout');

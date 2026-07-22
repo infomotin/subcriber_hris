@@ -162,7 +162,7 @@
             <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted text-uppercase font-size-12 fw-medium">Online Machines</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-success">{{ $onlineDevicesCount }}</h3>
+                    <h3 class="mt-2 mb-0 fw-bold text-success" id="statOnlineDevices">{{ $onlineDevicesCount }}</h3>
                 </div>
                 <div class="stat-icon text-success" style="background: rgba(52, 195, 143, 0.1);">
                     <i class="bx bx-wifi"></i>
@@ -176,7 +176,7 @@
             <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted text-uppercase font-size-12 fw-medium">Today's Punches</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-info">{{ $todayPunches }}</h3>
+                    <h3 class="mt-2 mb-0 fw-bold text-info" id="statTodayPunches">{{ $todayPunches }}</h3>
                 </div>
                 <div class="stat-icon text-info" style="background: rgba(80, 165, 241, 0.1);">
                     <i class="bx bx-fingerprint"></i>
@@ -190,7 +190,7 @@
             <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted text-uppercase font-size-12 fw-medium">Biometric Users</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-warning">{{ $usersCount }}</h3>
+                    <h3 class="mt-2 mb-0 fw-bold text-warning" id="statUsersCount">{{ $usersCount }}</h3>
                 </div>
                 <div class="stat-icon text-warning" style="background: rgba(241, 180, 76, 0.1);">
                     <i class="bx bx-user-check"></i>
@@ -204,7 +204,10 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bx bx-time me-1 text-primary"></i> Tenant Realtime Punch Logs Feed</span>
-        <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary">View All Logs</a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success font-size-12" id="liveBadge"><i class="bx bx-pulse me-1"></i> Live (5s)</span>
+            <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary">View All Logs</a>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -219,7 +222,7 @@
                         <th>Verification</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="livePunchFeed">
                     @forelse($recentLogs as $log)
                         <tr>
                             <td><span class="fw-bold text-primary">{{ $log->pin }}</span></td>
@@ -269,6 +272,46 @@
         radioYearly?.addEventListener('change', updateServerPrice);
 
         updateServerPrice();
+
+        // Real-time polling for attendance feed
+        const punchFeed = document.getElementById('livePunchFeed');
+        const todayPunchesEl = document.getElementById('statTodayPunches');
+        let lastLogId = {{ $recentLogs->first()?->id ?? 0 }};
+
+        function fetchLiveStats() {
+            fetch('{{ route("subscriber.dashboard.stats") }}', {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (todayPunchesEl && data.today_punches !== undefined) {
+                    todayPunchesEl.textContent = data.today_punches;
+                }
+
+                if (data.recent_logs && data.recent_logs.length > 0) {
+                    punchFeed.innerHTML = '';
+                    data.recent_logs.forEach(log => {
+                        const statusBadge = log.status_label === 'Check In'
+                            ? 'bg-success text-white'
+                            : log.status_label === 'Check Out'
+                                ? 'bg-danger text-white'
+                                : 'bg-info text-white';
+                        punchFeed.innerHTML += `
+                            <tr>
+                                <td><span class="fw-bold text-primary">${log.pin}</span></td>
+                                <td>${log.user_name}</td>
+                                <td><code>${log.device_serial}</code></td>
+                                <td>${log.punched_at}</td>
+                                <td><span class="badge ${statusBadge}">${log.status_label}</span></td>
+                                <td><span class="badge bg-secondary text-white">${log.verify_type_label}</span></td>
+                            </tr>`;
+                    });
+                }
+            })
+            .catch(() => {});
+        }
+
+        setInterval(fetchLiveStats, 5000);
     });
 </script>
 @endpush

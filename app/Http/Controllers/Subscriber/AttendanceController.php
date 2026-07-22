@@ -69,4 +69,32 @@ class AttendanceController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function live(Request $request)
+    {
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        if ($tenant) {
+            app()->instance('current_tenant_id', $tenant->id);
+        }
+
+        $after = $request->query('after', 0);
+
+        $query = AttendanceLog::with(['device', 'zktecoUser']);
+
+        if ($after > 0) {
+            $query->where('id', '>', $after);
+        }
+
+        $logs = $query->orderBy('punched_at', 'desc')->take(20)->get()->map(fn ($log) => [
+            'id' => $log->id,
+            'pin' => $log->pin,
+            'user_name' => $log->zktecoUser->name ?? 'User #' . $log->pin,
+            'device_serial' => $log->device->serial_number ?? 'N/A',
+            'punched_at' => $log->punched_at->format('M d, Y h:i:s A'),
+            'status_label' => $log->status_label,
+            'verify_type_label' => $log->verify_type_label,
+        ]);
+
+        return response()->json(['logs' => $logs]);
+    }
 }
