@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GatewayConfig;
 use App\Models\PaymentLog;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
@@ -15,9 +16,14 @@ class SslCommerzService
 
     public function __construct()
     {
-        $this->storeId = config('sslcommerz.apiCredentials.store_id', 'testbox');
-        $this->storePassword = config('sslcommerz.apiCredentials.store_password', 'qwerty');
-        $this->isSandbox = config('sslcommerz.sandbox', true);
+        $gatewayConfig = GatewayConfig::find(1);
+
+        $this->storeId = $gatewayConfig->sslcommerz_store_id
+            ?? config('sslcommerz.apiCredentials.store_id', 'testbox');
+        $this->storePassword = $gatewayConfig->sslcommerz_store_passwd
+            ?? config('sslcommerz.apiCredentials.store_password', 'qwerty');
+        $this->isSandbox = $gatewayConfig->sslcommerz_is_sandbox
+            ?? config('sslcommerz.sandbox', true);
     }
 
     public function initiatePayment(Tenant $tenant, SubscriptionPlan $plan, string $billingCycle = 'monthly'): array
