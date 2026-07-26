@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             GatewayConfigSeeder::class,
             SaasSeeder::class,
             HrisSetupSeeder::class,
+            HrisEmployeeSeeder::class,
         ]);
     }
 }

@@ -270,7 +270,7 @@
                                         </div>
                                         <div class="col-6">
                                             <select class="form-select" name="payment_mode" required>
-                                                <option value="bank">Bank Transfer</option>
+                                                <option value="bank_transfer">Bank Transfer</option>
                                                 <option value="cash">Cash</option>
                                                 <option value="mobile_banking">Mobile Banking</option>
                                             </select>
@@ -391,6 +391,37 @@
                                 <option value="education">Academic Degree / Education</option>
                                 <option value="training">Professional Training / Certification</option>
                             </select>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold mb-3 text-secondary"><i class="bx bx-briefcase me-1"></i> Previous Employment History & Ex-Company Info</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="company_name" class="form-label fw-medium">Ex-Company Name</label>
+                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="e.g. Acme Corporation">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="prev_designation" class="form-label fw-medium">Previous Designation</label>
+                                <input type="text" class="form-control" id="prev_designation" name="prev_designation" placeholder="e.g. Senior Software Engineer">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="exp_start_date" class="form-label fw-medium">Employment Start Date</label>
+                                <input type="date" class="form-control" id="exp_start_date" name="exp_start_date">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="exp_end_date" class="form-label fw-medium">Employment End Date</label>
+                                <input type="date" class="form-control" id="exp_end_date" name="exp_end_date">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_description" class="form-label fw-medium">Key Responsibilities & Qualifications Description</label>
+                            <textarea class="form-control" id="job_description" name="job_description" rows="3" placeholder="Describe your key deliverables, other qualifications, and roles in the company..."></textarea>
                         </div>
                     </div>
                 </div>
