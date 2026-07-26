@@ -5,13 +5,13 @@
 
 @theme {
     --font-sans: 'Inter', 'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --color-primary: #4f46e5;
-    --color-primary-hover: #4338ca;
-    --color-sidebar-bg: #0f172a;
-    --color-sidebar-color: #94a3b8;
+    --color-primary: #5f5af6;
+    --color-primary-hover: #4c46e0;
+    --color-sidebar-bg: #070b13;
+    --color-sidebar-color: #8292a8;
     --color-sidebar-active: #ffffff;
-    --color-sidebar-active-bg: #1e293b;
-    --color-body-bg: #f8fafc;
+    --color-sidebar-active-bg: rgba(95, 90, 246, 0.08);
+    --color-body-bg: #f4f6fa;
 }
 
 /* Global Reset & Body */
@@ -106,13 +106,13 @@ body {
 }
 
 .sidebar-menu li.active a, .sidebar a.active {
-    color: var(--color-sidebar-active);
+    color: var(--color-sidebar-active) !important;
     background-color: var(--color-sidebar-active-bg) !important;
     font-weight: 600;
 }
 
 .sidebar-menu li.active a i, .sidebar a.active i {
-    color: #6366f1; /* indigo-500 */
+    color: #10b981 !important;
 }
 
 /* Header / Topbar Styling */
@@ -208,9 +208,11 @@ body {
 /* Form Controls (Optimized for Touch Devices & Modern Feel) */
 .form-label {
     margin-bottom: 0.5rem !important;
-    font-weight: 600 !important;
-    font-size: 0.85rem !important;
-    color: #475569 !important; /* slate-600 */
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #64748b !important;
 }
 
 .form-control, .form-select {
@@ -218,19 +220,19 @@ body {
     width: 100%;
     height: 46px !important;
     padding: 0.625rem 1rem !important;
-    font-size: 16px !important; /* Lock at 16px to prevent iOS Auto-Zoom */
+    font-size: 15px !important;
     font-weight: 400;
     line-height: 1.5;
     color: #1e293b;
     background-color: #ffffff;
-    border: 1px solid #cbd5e1 !important; /* slate-300 */
+    border: 1.5px solid #e2e8f0 !important;
     border-radius: 10px !important;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12) !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 4px rgba(95, 90, 246, 0.12) !important;
     outline: 0;
 }
 
@@ -279,16 +281,16 @@ body {
 }
 
 .btn-primary {
-    background-color: #4f46e5 !important;
-    border-color: #4f46e5 !important;
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(95, 90, 246, 0.15) !important;
 }
 
 .btn-primary:hover {
-    background-color: #4338ca !important;
-    border-color: #4338ca !important;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25) !important;
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    box-shadow: 0 6px 16px rgba(95, 90, 246, 0.25) !important;
 }
 
 .btn-success {
@@ -554,4 +556,112 @@ body {
 .sidebar-menu li a[aria-expanded="true"] .bx-chevron-down {
     transform: rotate(180deg);
 }
+
+/* Desktop Sidebar Collapsed State */
+@media (min-width: 992px) {
+    body.sidebar-collapsed #vertical-menu {
+        transform: translateX(-100%);
+    }
+    body.sidebar-collapsed #page-topbar {
+        left: 0;
+    }
+    body.sidebar-collapsed .main-content {
+        margin-left: 0;
+    }
+}
+
+/* Premium Visual & Interactive Redesign Enhancements */
+.sidebar-menu li {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.sidebar-menu li.active::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    background: linear-gradient(180deg, #6366f1, #8b5cf6);
+    border-radius: 0 4px 4px 0;
+    z-index: 5;
+}
+
+/* Micro-animations and Shadow Depth on Cards */
+.card {
+    border: 1px solid rgba(226, 232, 240, 0.7) !important;
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 0 0 1px rgba(241, 245, 249, 0.5) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(99, 102, 241, 0.08) !important;
+    border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Stats Cards Soft Background & Gradients */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Table Hover Row Glow */
+.table tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(248, 250, 252, 0.95) !important;
+}
+
+/* Topbar Glassmorphism Overhaul */
+#page-topbar {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Smooth Pulsing Live Badges */
+#liveBadge {
+    animation: live-indicator-pulse 2s infinite alternate;
+}
+
+@keyframes live-indicator-pulse {
+    0% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    100% { opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
 

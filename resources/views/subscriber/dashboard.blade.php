@@ -3,39 +3,96 @@
 @section('title', 'Subscriber Tenant Dashboard')
 
 @section('content')
-<div class="page-title-box">
-    <h4>Subscriber Portal: {{ $tenant->name ?? 'My Organization' }}</h4>
+<style>
+    .billing-card {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-check:checked + .billing-card {
+        border-color: var(--color-primary) !important;
+        background-color: rgba(95, 90, 246, 0.04) !important;
+        box-shadow: 0 0 0 1px var(--color-primary), 0 4px 12px rgba(95, 90, 246, 0.08) !important;
+    }
+    .btn-check:checked + .billing-card .bx-calendar-event {
+        color: var(--color-primary) !important;
+    }
+    .btn-check:checked + .billing-card .bx-crown {
+        color: #d97706 !important;
+    }
+    .billing-card:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+    .premium-badge {
+        background: linear-gradient(135deg, rgba(95, 90, 246, 0.12), rgba(16, 185, 129, 0.12));
+        border: 1px solid rgba(95, 90, 246, 0.25) !important;
+        color: var(--color-primary) !important;
+    }
+    .stat-card {
+        border: 1px solid rgba(226, 232, 240, 0.7) !important;
+        background: #ffffff !important;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    }
+</style>
+
+<div class="page-title-box mb-4">
+    <div>
+        <span class="text-primary fw-bold text-uppercase font-size-10 tracking-wider d-block mb-1">Subscriber Dashboard</span>
+        <h4 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #0f172a;">Overview & Portal Control</h4>
+    </div>
     <div class="page-title-right">
-        <a href="#subscription-info-section" class="btn btn-warning btn-sm rounded-pill shadow-sm">
-            <i class="bx bx-crown me-1"></i> Manage Subscription & Plan
+        <a href="#subscription-info-section" class="btn btn-primary btn-sm rounded-pill shadow-sm px-4">
+            <i class="bx bx-crown me-1 text-amber-300"></i> Manage Subscription & Plan
         </a>
     </div>
 </div>
 
 <!-- Tenant ADMS Dedicated Push Endpoint Banner -->
-<div class="alert alert-info border-0 shadow-sm mb-4">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <h6 class="fw-bold mb-1"><i class="bx bx-broadcast me-2"></i> Dedicated ZKTeco Machine ADMS Endpoint</h6>
-            <p class="mb-0 font-size-13">Configure this unique URL on your ZKTeco biometric machine's <strong>COMM. &gt; ADMS Cloud Server</strong> settings:</p>
-            <code class="font-size-14 text-dark bg-white p-2 rounded d-inline-block mt-2">
-                http://amds.test/iclock/{{ $tenant->tenant_token }}/cdata
-            </code>
-        </div>
-        <div class="text-end">
-            <span class="badge bg-primary font-size-13 p-2">Tenant Token: {{ $tenant->tenant_token }}</span>
+<div class="card border-0 mb-4" style="background: linear-gradient(135deg, #eef2ff, #f5f3ff); border: 1px solid rgba(95, 90, 246, 0.1) !important;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h6 class="fw-bold text-slate-800 mb-2" style="font-family: 'Poppins', sans-serif; font-size: 0.95rem;">
+                    <i class="bx bx-broadcast me-2 text-primary font-size-20 align-middle"></i> Dedicated ZKTeco Machine ADMS Endpoint
+                </h6>
+                <p class="mb-3 text-slate-600 font-size-13">Configure this unique URL on your ZKTeco biometric machine's <strong>COMM. &gt; ADMS Cloud Server</strong> settings:</p>
+                
+                <div class="input-group" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                    <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-link"></i></span>
+                    <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="http://amds.test/iclock/{{ $tenant->tenant_token }}/cdata" readonly>
+                    <button class="btn btn-primary px-4 fw-bold font-size-13" type="button" id="copy-btn" onclick="copyAdmsUrl()">
+                        <i class="bx bx-copy me-1" id="copy-icon"></i> <span id="copy-text">Copy URL</span>
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex flex-column align-items-start align-items-md-end gap-1">
+                <span class="badge premium-badge font-size-11 px-3 py-2 rounded-pill">Active Tenant Token</span>
+                <code class="font-size-13 fw-bold text-primary bg-white border px-3 py-1.5 rounded-pill mt-1" style="border-color: rgba(95, 90, 246, 0.15) !important;">{{ $tenant->tenant_token }}</code>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Subscriber Information & Subscription Management Section -->
-<div id="subscription-info-section" class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white border-bottom py-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0 text-dark">
-                <i class="bx bx-id-card text-primary me-2 font-size-20"></i> Subscriber Information & Subscription Plan
+<div id="subscription-info-section" class="card border-0 mb-4">
+    <div class="card-header bg-white border-bottom py-3.5">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="fw-bold mb-0 text-slate-800" style="font-family: 'Poppins', sans-serif;">
+                <i class="bx bx-id-card text-primary me-2 font-size-22 align-middle"></i> Subscription & Account Overview
             </h5>
-            <span class="badge {{ $tenant->status === 'active' ? 'bg-success' : 'bg-danger' }} font-size-13 px-3 py-2">
+            <span class="badge {{ $tenant->status === 'active' ? 'bg-success' : 'bg-danger' }} font-size-12 px-3 py-2 rounded-pill shadow-sm">
                 {{ strtoupper($tenant->status) }} SUBSCRIBER
             </span>
         </div>
@@ -43,56 +100,65 @@
     <div class="card-body p-4">
         <div class="row g-4">
             <!-- Left Side: Subscriber & Active Subscription Details -->
-            <div class="col-lg-6 border-end">
-                <h6 class="text-uppercase text-muted font-size-12 fw-bold mb-3">Account Details</h6>
+            <div class="col-lg-6 border-end pe-lg-4">
+                <h6 class="text-uppercase text-muted font-size-11 tracking-wider fw-bold mb-3.5">Account Details</h6>
                 
-                <div class="mb-3">
-                    <span class="text-muted d-block font-size-13">Organization / Subscriber Name:</span>
-                    <h5 class="fw-bold text-dark mb-0">{{ $tenant->name }}</h5>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($tenant->name) }}&background=5f5af6&color=fff" class="rounded-4 border" width="56" height="56" alt="Org Logo">
+                    <div>
+                        <span class="text-muted d-block font-size-12 mb-0.5">Organization / Subscriber</span>
+                        <h5 class="fw-bold text-slate-800 mb-0" style="font-family: 'Poppins', sans-serif;">{{ $tenant->name }}</h5>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <span class="text-muted d-block font-size-13">Admin Account Email:</span>
-                    <strong class="text-dark">{{ auth()->user()->email ?? 'subscriber@amds.test' }}</strong>
+                <div class="bg-light p-3.5 rounded-3 mb-4 border border-slate-100">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted font-size-12 d-block">Admin Email</span>
+                            <strong class="text-slate-800 font-size-13">{{ auth()->user()->email ?? 'subscriber@amds.test' }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted font-size-12 d-block">Device Status</span>
+                            <strong class="text-slate-800 font-size-13">{{ $devicesCount }} / {{ $tenant->max_devices }} Machines</strong>
+                        </div>
+                    </div>
                 </div>
 
-                <hr class="my-3">
-
-                <h6 class="text-uppercase text-muted font-size-12 fw-bold mb-3">Current Active Subscription</h6>
+                <h6 class="text-uppercase text-muted font-size-11 tracking-wider fw-bold mb-3">Subscription Details</h6>
                 
                 <div class="row g-3 mb-3">
                     <div class="col-6">
-                        <div class="bg-light p-3 rounded">
-                            <span class="text-muted font-size-12 d-block">Active Package Plan</span>
-                            <h5 class="fw-bold text-primary mb-0">{{ $currentPlan->name ?? 'Starter Plan' }}</h5>
+                        <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-3">
+                            <span class="text-primary font-size-12 d-block fw-semibold">Active Plan</span>
+                            <h5 class="fw-bold text-indigo-900 mb-0" style="font-family: 'Poppins', sans-serif;">{{ $currentPlan->name ?? 'Starter Plan' }}</h5>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="bg-light p-3 rounded">
-                            <span class="text-muted font-size-12 d-block">Remaining Days</span>
-                            <h5 class="fw-bold {{ $remainingDays <= 5 ? 'text-danger' : 'text-success' }} mb-0">
-                                <i class="bx bx-time me-1"></i> {{ $remainingDays }} Days
+                        <div class="bg-amber-50 border border-amber-100 p-3 rounded-3">
+                            <span class="text-amber-700 font-size-12 d-block fw-semibold">Remaining Days</span>
+                            <h5 class="fw-bold {{ $remainingDays <= 5 ? 'text-danger' : 'text-amber-800' }} mb-0" style="font-family: 'Poppins', sans-serif;">
+                                <i class="bx bx-time me-1 align-middle"></i> {{ $remainingDays }} Days
                             </h5>
                         </div>
                     </div>
                 </div>
 
-                <ul class="list-unstyled font-size-13 mb-0 text-secondary">
-                    <li class="mb-2"><i class="bx bx-calendar text-primary me-2"></i> Expiration Date: <strong>{{ $tenant->expires_at ? $tenant->expires_at->format('M d, Y (h:i A)') : 'Lifetime' }}</strong></li>
-                    <li class="mb-2"><i class="bx bx-chip text-primary me-2"></i> Machine Limit: <strong>{{ $devicesCount }} / {{ $tenant->max_devices }} Machines Registered</strong></li>
+                <ul class="list-unstyled font-size-13 mb-0 text-slate-600 mt-4">
+                    <li class="mb-2.5 d-flex align-items-center"><i class="bx bx-calendar text-primary me-2.5 font-size-16"></i> Expiration Date: &nbsp;<strong class="text-slate-800">{{ $tenant->expires_at ? $tenant->expires_at->format('M d, Y (h:i A)') : 'Lifetime' }}</strong></li>
+                    <li class="d-flex align-items-center"><i class="bx bx-shield-check text-success me-2.5 font-size-16"></i> Current Service Status: &nbsp;<strong class="text-success">Active & Online</strong></li>
                 </ul>
             </div>
 
             <!-- Right Side: Upgrade / Renewal Server Package Purchase Form -->
-            <div class="col-lg-6">
-                <h6 class="text-uppercase text-primary font-size-12 fw-bold mb-3"><i class="bx bx-shopping-bag me-1"></i> Buy / Upgrade Subscription Plan</h6>
+            <div class="col-lg-6 ps-lg-4">
+                <h6 class="text-uppercase text-primary font-size-11 tracking-wider fw-bold mb-3.5"><i class="bx bx-shopping-bag me-1"></i> Buy / Upgrade Subscription Plan</h6>
                 
                 <form action="{{ route('subscriber.checkout') }}" method="POST" id="formSubCheckout">
                     @csrf
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-dark font-size-13">Select Server Package Plan</label>
-                        <select name="plan_id" id="selectPackagePlan" class="form-select border-secondary" required>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-slate-700 font-size-12 tracking-wide uppercase">Select Server Package Plan</label>
+                        <select name="plan_id" id="selectPackagePlan" class="form-select border-secondary" required style="border: 2px solid #e2e8f0 !important; border-radius: 10px;">
                             @foreach($plans as $plan)
                                 <option value="{{ $plan->id }}" 
                                         data-monthly="{{ $plan->price_monthly }}" 
@@ -105,35 +171,43 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-dark font-size-13">Choose Billing Cycle</label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check flex-fill bg-light p-3 rounded border">
-                                <input class="form-check-input" type="radio" name="billing_cycle" id="cycleMonthly" value="monthly" checked>
-                                <label class="form-check-label fw-bold cursor-pointer" for="cycleMonthly">
-                                    Monthly Billing
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-slate-700 font-size-12 tracking-wide uppercase">Choose Billing Cycle</label>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="d-block cursor-pointer">
+                                    <input class="btn-check" type="radio" name="billing_cycle" id="cycleMonthly" value="monthly" class="d-none" checked>
+                                    <div class="p-3 billing-card text-center">
+                                        <i class="bx bx-calendar-event font-size-22 mb-1.5 text-slate-400 d-block"></i>
+                                        <div class="fw-bold font-size-13 text-slate-800">Monthly</div>
+                                        <small class="text-slate-500 font-size-11">Month-to-month</small>
+                                    </div>
                                 </label>
                             </div>
-                            <div class="form-check flex-fill bg-light p-3 rounded border">
-                                <input class="form-check-input" type="radio" name="billing_cycle" id="cycleYearly" value="yearly">
-                                <label class="form-check-label fw-bold cursor-pointer" for="cycleYearly">
-                                    Yearly Billing (Discounted)
+                            <div class="col-6">
+                                <label class="d-block cursor-pointer">
+                                    <input class="btn-check" type="radio" name="billing_cycle" id="cycleYearly" value="yearly" class="d-none">
+                                    <div class="p-3 billing-card text-center">
+                                        <i class="bx bx-crown font-size-22 mb-1.5 text-slate-400 d-block"></i>
+                                        <div class="fw-bold font-size-13 text-slate-800">Yearly</div>
+                                        <small class="text-success fw-bold font-size-11">Save on pricing</small>
+                                    </div>
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Server Amount Price Calculation Box -->
-                    <div class="bg-soft-primary p-3 rounded d-flex justify-content-between align-items-center mb-3">
+                    <div class="p-3.5 rounded-4 d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, rgba(95, 90, 246, 0.04), rgba(16, 185, 129, 0.04)); border: 1px dashed rgba(95, 90, 246, 0.2);">
                         <div>
-                            <span class="text-muted font-size-12 d-block">Server Price Amount to Pay:</span>
-                            <h3 class="fw-bold text-primary mb-0" id="displayServerAmount">0.00 BDT</h3>
+                            <span class="text-muted font-size-11 d-block mb-0.5">Calculated Amount:</span>
+                            <h3 class="fw-bold text-primary mb-0" id="displayServerAmount" style="font-family: 'Poppins', sans-serif;">0.00 BDT</h3>
                         </div>
-                        <span class="badge bg-primary px-3 py-2 font-size-13" id="displayMaxDevices">Max 2 Machines</span>
+                        <span class="badge bg-primary px-3 py-2 font-size-12 rounded-pill shadow-sm" id="displayMaxDevices">Max 2 Machines</span>
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
-                        <i class="bx bx-credit-card me-1"></i> Pay & Renew via SSLCommerz
+                    <button type="submit" class="btn btn-success w-100 fw-bold btn-lg shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669) !important; border: 0 !important; border-radius: 12px !important; min-height: 48px;">
+                        <i class="bx bx-credit-card me-1.5 font-size-18 align-middle"></i> Pay & Renew via SSLCommerz
                     </button>
                 </form>
             </div>
@@ -144,13 +218,13 @@
 <!-- Quotas & Metrics -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card stat-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
                 <div>
-                    <span class="text-muted text-uppercase font-size-12 fw-medium">Machine Quota</span>
-                    <h3 class="mt-2 mb-0 fw-bold">{{ $devicesCount }} / {{ $tenant->max_devices }}</h3>
+                    <span class="text-muted text-uppercase font-size-11 tracking-wider fw-bold">Machine Quota</span>
+                    <h3 class="mt-2 mb-0 fw-bold text-slate-800" style="font-family: 'Poppins', sans-serif;">{{ $devicesCount }} <span class="font-size-16 text-muted">/ {{ $tenant->max_devices }}</span></h3>
                 </div>
-                <div class="stat-icon bg-soft-primary text-primary">
+                <div class="stat-icon bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-sm">
                     <i class="bx bx-chip"></i>
                 </div>
             </div>
@@ -158,13 +232,13 @@
     </div>
 
     <div class="col-md-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card stat-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
                 <div>
-                    <span class="text-muted text-uppercase font-size-12 fw-medium">Online Machines</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-success" id="statOnlineDevices">{{ $onlineDevicesCount }}</h3>
+                    <span class="text-muted text-uppercase font-size-11 tracking-wider fw-bold">Online Machines</span>
+                    <h3 class="mt-2 mb-0 fw-bold text-success" id="statOnlineDevices" style="font-family: 'Poppins', sans-serif;">{{ $onlineDevicesCount }}</h3>
                 </div>
-                <div class="stat-icon text-success" style="background: rgba(52, 195, 143, 0.1);">
+                <div class="stat-icon bg-emerald-50 border border-emerald-100 text-emerald-600 shadow-sm">
                     <i class="bx bx-wifi"></i>
                 </div>
             </div>
@@ -172,13 +246,13 @@
     </div>
 
     <div class="col-md-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card stat-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
                 <div>
-                    <span class="text-muted text-uppercase font-size-12 fw-medium">Today's Punches</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-info" id="statTodayPunches">{{ $todayPunches }}</h3>
+                    <span class="text-muted text-uppercase font-size-11 tracking-wider fw-bold">Today's Punches</span>
+                    <h3 class="mt-2 mb-0 fw-bold text-sky-600" id="statTodayPunches" style="font-family: 'Poppins', sans-serif;">{{ $todayPunches }}</h3>
                 </div>
-                <div class="stat-icon text-info" style="background: rgba(80, 165, 241, 0.1);">
+                <div class="stat-icon bg-sky-50 border border-sky-100 text-sky-600 shadow-sm">
                     <i class="bx bx-fingerprint"></i>
                 </div>
             </div>
@@ -186,13 +260,13 @@
     </div>
 
     <div class="col-md-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card stat-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
                 <div>
-                    <span class="text-muted text-uppercase font-size-12 fw-medium">Biometric Users</span>
-                    <h3 class="mt-2 mb-0 fw-bold text-warning" id="statUsersCount">{{ $usersCount }}</h3>
+                    <span class="text-muted text-uppercase font-size-11 tracking-wider fw-bold">Biometric Users</span>
+                    <h3 class="mt-2 mb-0 fw-bold text-amber-600" id="statUsersCount" style="font-family: 'Poppins', sans-serif;">{{ $usersCount }}</h3>
                 </div>
-                <div class="stat-icon text-warning" style="background: rgba(241, 180, 76, 0.1);">
+                <div class="stat-icon bg-amber-50 border border-amber-100 text-amber-600 shadow-sm">
                     <i class="bx bx-user-check"></i>
                 </div>
             </div>
@@ -201,16 +275,16 @@
 </div>
 
 <!-- Tenant Attendance Log Feed -->
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bx bx-time me-1 text-primary"></i> Tenant Realtime Punch Logs Feed</span>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success font-size-12" id="liveBadge"><i class="bx bx-pulse me-1"></i> Live (5s)</span>
-            <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary">View All Logs</a>
+<div class="card border-0">
+    <div class="card-header bg-white border-bottom py-3.5 d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-slate-800" style="font-family: 'Poppins', sans-serif;"><i class="bx bx-time me-1 text-primary align-middle font-size-18"></i> Realtime Punch Logs Feed</span>
+        <div class="d-flex align-items-center gap-2.5">
+            <span class="badge bg-success font-size-11 px-2.5 py-1.5" id="liveBadge"><i class="bx bx-pulse me-1"></i> Live feed (5s)</span>
+            <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary font-size-12 px-3 py-1.5 rounded-pill">View All Logs</a>
         </div>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <div class="table-responsive" style="border: 0 !important; border-radius: 0 !important;">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
@@ -233,7 +307,7 @@
                             <td><span class="badge bg-soft-secondary text-secondary">{{ $log->verify_type_label }}</span></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-muted py-4">No attendance punches recorded for your organization yet.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-5">No attendance punches recorded for your organization yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -244,6 +318,27 @@
 
 @push('scripts')
 <script>
+    function copyAdmsUrl() {
+        const copyText = document.getElementById("adms-url");
+        navigator.clipboard.writeText(copyText.value);
+        
+        const copyBtn = document.getElementById("copy-btn");
+        const copyIcon = document.getElementById("copy-icon");
+        const copyTextSpan = document.getElementById("copy-text");
+        
+        copyBtn.classList.remove("btn-primary");
+        copyBtn.classList.add("btn-success");
+        copyIcon.className = "bx bx-check me-1";
+        copyTextSpan.textContent = "Copied URL";
+        
+        setTimeout(() => {
+            copyBtn.classList.remove("btn-success");
+            copyBtn.classList.add("btn-primary");
+            copyIcon.className = "bx bx-copy me-1";
+            copyTextSpan.textContent = "Copy URL";
+        }, 2000);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const selectPlan = document.getElementById('selectPackagePlan');
         const radioMonthly = document.getElementById('cycleMonthly');
@@ -291,11 +386,13 @@
                 if (data.recent_logs && data.recent_logs.length > 0) {
                     punchFeed.innerHTML = '';
                     data.recent_logs.forEach(log => {
-                        const statusBadge = log.status_label === 'Check In'
-                            ? 'bg-success text-white'
-                            : log.status_label === 'Check Out'
-                                ? 'bg-danger text-white'
-                                : 'bg-info text-white';
+                        let statusBadge = 'bg-soft-info text-info';
+                        if (log.status_label === 'Check In') {
+                            statusBadge = 'bg-soft-success text-success';
+                        } else if (log.status_label === 'Check Out') {
+                            statusBadge = 'bg-soft-danger text-danger';
+                        }
+                        
                         punchFeed.innerHTML += `
                             <tr>
                                 <td><span class="fw-bold text-primary">${log.pin}</span></td>
@@ -303,7 +400,7 @@
                                 <td><code>${log.device_serial}</code></td>
                                 <td>${log.punched_at}</td>
                                 <td><span class="badge ${statusBadge}">${log.status_label}</span></td>
-                                <td><span class="badge bg-secondary text-white">${log.verify_type_label}</span></td>
+                                <td><span class="badge bg-soft-secondary text-secondary">${log.verify_type_label}</span></td>
                             </tr>`;
                     });
                 }

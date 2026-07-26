@@ -152,6 +152,9 @@ class GeneralController extends Controller
                 break;
         }
 
+        if ($module === 'calendar') {
+            return view('subscriber.hris.calendar', compact('tenant', 'module'));
+        }
         return view('subscriber.hris.general_form', compact('config', 'module'));
     }
 
