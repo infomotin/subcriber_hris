@@ -84,14 +84,19 @@
             
             <!-- Setup Submenu -->
             <li>
-                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
+                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
                         <i class="bx bx-cog text-slate-400"></i>
                         <span>Setup</span>
                     </div>
                     <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.hris.master.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.master.index') }}" class="font-size-13 py-2 text-primary fw-medium">
+                            <i class="bx bx-slider-alt me-2 text-primary font-size-15"></i> Master Setup
+                        </a>
+                    </li>
                     <li class="{{ request()->routeIs('subscriber.hris.departments.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.departments.index') }}" class="font-size-13 py-2">
                             <i class="bx bx-git-branch me-2"></i> Department Setup

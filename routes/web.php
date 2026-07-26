@@ -165,6 +165,13 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('leaves', Hris\LeaveController::class);
             Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
             Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
+
+            // Master Setup Dashboard (Sex, Address Hierarchy, Board, Institution, Leave Reasons, Salary Relations, Leave Balance)
+            Route::get('master-setup', [Hris\MasterSetupController::class, 'index'])->name('master.index');
+            Route::post('master-setup/store/{type}', [Hris\MasterSetupController::class, 'store'])->name('master.store');
+            Route::delete('master-setup/delete/{type}/{id}', [Hris\MasterSetupController::class, 'destroy'])->name('master.destroy');
+            Route::post('master-setup/salary-relation', [Hris\MasterSetupController::class, 'storeSalaryRelation'])->name('master.salary-relation');
+            Route::post('master-setup/leave-balance', [Hris\MasterSetupController::class, 'storeLeaveBalance'])->name('master.leave-balance');
         });
     });
 

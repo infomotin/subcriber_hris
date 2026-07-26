@@ -81,6 +81,16 @@ class EmployeeProfile extends Model
         return $this->hasMany(EmployeeEducation::class, 'employee_profile_id');
     }
 
+    public function salaryStructure(): HasOne
+    {
+        return $this->hasOne(SalaryStructure::class, 'employee_profile_id');
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(EmployeeExperience::class, 'employee_profile_id');
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(EmployeeImage::class, 'employee_profile_id');

@@ -70,6 +70,9 @@ class SaasMultiTenantTest extends TestCase
         $subscriberUser = User::factory()->create();
         $subscriberUser->assignRole('Subscriber');
 
+        $tenant = Tenant::create(['name' => 'Subscriber Org', 'tenant_token' => 'SUB_TOKEN_999']);
+        $subscriberUser->update(['tenant_id' => $tenant->id]);
+
         $this->actingAs($subscriberUser)->get('/subscriber/dashboard')->assertStatus(200);
         $this->actingAs($subscriberUser)->get('/subscriber/devices')->assertStatus(200);
         $this->actingAs($subscriberUser)->get('/subscriber/attendance')->assertStatus(200);
@@ -77,6 +80,29 @@ class SaasMultiTenantTest extends TestCase
         $this->actingAs($subscriberUser)->get('/subscriber/webhook')->assertStatus(200);
         $this->actingAs($subscriberUser)->get('/subscriber/mock-remote-viewer')->assertStatus(200);
         $this->actingAs($subscriberUser)->get('/subscriber/plans')->assertStatus(200);
+
+        // HRIS Setup Views
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/departments')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/designations')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/shifts')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/calendar')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/addresses')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/other')->assertStatus(200);
+
+        // HRIS Databases Views
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/employees')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/verification')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/increments')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/kpis')->assertStatus(200);
+
+        // HRIS Tools & Reports Views
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/applications')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/leaves')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/advances')->assertStatus(200);
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/general/reports')->assertStatus(200);
+
+        // HRIS Master Setup Dashboard
+        $this->actingAs($subscriberUser)->get('/subscriber/hris/master-setup')->assertStatus(200);
     }
 
     public function test_system_admin_panel_routes_access(): void

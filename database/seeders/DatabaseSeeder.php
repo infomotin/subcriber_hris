@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             GatewayConfigSeeder::class,
             SaasSeeder::class,
+            HrisSetupSeeder::class,
         ]);
     }
 }
