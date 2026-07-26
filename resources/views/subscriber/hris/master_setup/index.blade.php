@@ -45,7 +45,7 @@
                     <a class="nav-link mb-2 py-3 px-4 d-flex align-items-center {{ $tab == 'leave_balance' ? 'active' : '' }}" 
                        href="?tab=leave_balance" role="tab">
                         <i class="bx bx-calendar-exclamation me-3 font-size-18"></i>
-                        <span>Leave Balances</span>
+                        <span>Leave Types</span>
                     </a>
 
                     <a class="nav-link mb-0 py-3 px-4 d-flex align-items-center {{ $tab == 'salary' ? 'active' : '' }}" 
@@ -374,95 +374,83 @@
                 </div>
             </div>
 
-            <!-- 5. Leave Balances Tab -->
+            <!-- 5. Leave Types Tab -->
             <div class="tab-pane fade show active" style="display: {{ $tab == 'leave_balance' ? 'block' : 'none' }}">
                 <div class="row g-4">
-                    <div class="col-lg-4">
+                    <div class="col-lg-5">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-white border-bottom py-3">
-                                <h6 class="fw-bold mb-0 text-dark">Set Employee Leave Balance</h6>
+                                <h6 class="fw-bold mb-0 text-dark">Add Leave Type</h6>
                             </div>
                             <div class="card-body p-4">
-                                <form action="{{ route('subscriber.hris.master.leave-balance') }}" method="POST">
+                                <form action="{{ route('subscriber.hris.master.store', 'leave_type') }}" method="POST">
                                     @csrf
                                     <div class="mb-3">
-                                        <label for="emp_id" class="form-label fw-medium">Select Employee <span class="text-danger">*</span></label>
-                                        <select class="form-select" id="emp_id" name="employee_profile_id" required>
-                                            <option value="">Choose Employee</option>
-                                            @foreach($employees as $emp)
-                                                <option value="{{ $emp->id }}">{{ $emp->user->name ?? 'N/A' }} ({{ $emp->employee_id }})</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="leave_type_id" class="form-label fw-medium">Leave Type <span class="text-danger">*</span></label>
-                                        <select class="form-select" id="leave_type_id" name="leave_type_id" required>
-                                            <option value="">Choose Leave Type</option>
-                                            @foreach($leaveTypes as $type)
-                                                <option value="{{ $type->id }}">{{ $type->name }} (CL/SL/EL)</option>
-                                            @endforeach
-                                        </select>
+                                        <label class="form-label fw-medium">Leave Category <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="name" required placeholder="e.g. Casual Leave">
                                     </div>
                                     <div class="row">
-                                        <div class="col-6 mb-3">
-                                            <label for="calendar_year" class="form-label fw-medium">Year <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="calendar_year" name="calendar_year" value="{{ date('Y') }}" required>
+                                        <div class="col-4 mb-3">
+                                            <label class="form-label fw-medium">Code <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="code" required placeholder="CL" maxlength="10">
                                         </div>
-                                        <div class="col-6 mb-3">
-                                            <label for="allocated_days" class="form-label fw-medium">Allocated Days <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="allocated_days" name="allocated_days" value="15" required>
+                                        <div class="col-4 mb-3">
+                                            <label class="form-label fw-medium">Days / Year <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" name="days_per_year" value="10" required min="0">
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="earned_days" class="form-label fw-medium">Earned Days (Bonus/Carried)</label>
-                                        <input type="number" class="form-control" id="earned_days" name="earned_days" value="0">
+                                        <div class="col-4 mb-3 d-flex align-items-end pb-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="accrual_enabled" name="accrual_enabled" value="1" checked>
+                                                <label class="form-check-label fw-medium" for="accrual_enabled">Pro-rata</label>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="text-end">
-                                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Configure Balance</button>
+                                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Leave Type</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-8">
+                    <div class="col-lg-7">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-white border-bottom py-3">
-                                <h6 class="fw-bold mb-0 text-dark">Leave Balance Registry</h6>
+                                <h6 class="fw-bold mb-0 text-dark">Configured Leave Categories</h6>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Employee</th>
-                                                <th>Leave Type</th>
-                                                <th>Year</th>
-                                                <th>Allocated</th>
-                                                <th>Spent</th>
-                                                <th>Earned</th>
-                                                <th>Total Available</th>
+                                                <th>Category</th>
+                                                <th>Code</th>
+                                                <th>Per Year</th>
+                                                <th>Pro-rata</th>
                                                 <th class="text-end px-4">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($leaveBalances as $balance)
+                                            @forelse($leaveTypes as $type)
                                                 <tr>
-                                                    <td><strong>{{ $balance->employee->user->name ?? 'N/A' }}</strong> <br><small class="text-muted">ID: {{ $balance->employee->employee_id }}</small></td>
-                                                    <td><span class="badge bg-soft-primary text-primary">{{ $balance->leaveType->name ?? 'N/A' }}</span></td>
-                                                    <td><code>{{ $balance->calendar_year }}</code></td>
-                                                    <td>{{ $balance->allocated_days }} days</td>
-                                                    <td>{{ $balance->spent_days }} days</td>
-                                                    <td>{{ $balance->earned_days }} days</td>
-                                                    <td><strong class="text-success">{{ ($balance->allocated_days + $balance->earned_days) - $balance->spent_days }} days</strong></td>
+                                                    <td><strong>{{ $type->name }}</strong></td>
+                                                    <td><code>{{ $type->code }}</code></td>
+                                                    <td><strong>{{ $type->days_per_year }}</strong> days</td>
+                                                    <td>
+                                                        @if($type->accrual_enabled)
+                                                            <span class="badge bg-soft-success text-success px-3 py-1.5 font-size-11">Yes</span>
+                                                        @else
+                                                            <span class="badge bg-soft-secondary text-secondary px-3 py-1.5 font-size-11">No</span>
+                                                        @endif
+                                                    </td>
                                                     <td class="text-end px-4">
-                                                        <form action="{{ route('subscriber.hris.master.destroy', ['type' => 'leave_balance', 'id' => $balance->id]) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                                        <form action="{{ route('subscriber.hris.master.destroy', ['type' => 'leave_type', 'id' => $type->id]) }}" method="POST" onsubmit="return confirm('Delete this leave type?')">
                                                             @csrf @method('DELETE')
                                                             <button type="submit" class="btn btn-sm btn-light border-0 text-danger"><i class="bx bx-trash"></i></button>
                                                         </form>
                                                     </td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="8" class="text-center py-4 text-muted">No employee leave balances defined.</td></tr>
+                                                <tr><td colspan="5" class="text-center py-4 text-muted">No leave types configured.</td></tr>
                                             @endforelse
                                         </tbody>
                                     </table>

@@ -10,8 +10,8 @@ use App\Models\Thana;
 use App\Models\EducationBoard;
 use App\Models\Institution;
 use App\Models\LeaveReason;
-use App\Models\LeaveBalance;
 use App\Models\LeaveType;
+use App\Models\LeaveBalance;
 use App\Models\EmployeeProfile;
 use App\Models\SalaryRelation;
 use App\Models\Tenant;
@@ -117,6 +117,22 @@ class MasterSetupController extends Controller
                 ]);
                 $msg = 'Leave reason added successfully.';
                 break;
+            case 'leave_type':
+                $validated = $request->validate([
+                    'name' => 'required|string|max:255',
+                    'code' => 'required|string|max:10',
+                    'days_per_year' => 'required|numeric|min:0',
+                    'accrual_enabled' => 'boolean',
+                ]);
+                LeaveType::create([
+                    'tenant_id' => $tenant->id,
+                    'name' => $validated['name'],
+                    'code' => strtoupper($validated['code']),
+                    'days_per_year' => $validated['days_per_year'],
+                    'accrual_enabled' => $request->boolean('accrual_enabled'),
+                ]);
+                $msg = 'Leave type created successfully.';
+                break;
             default:
                 return redirect()->back()->with('error', 'Invalid type specified.');
         }
@@ -150,6 +166,9 @@ class MasterSetupController extends Controller
                 break;
             case 'leave_balance':
                 LeaveBalance::destroy($id);
+                break;
+            case 'leave_type':
+                LeaveType::destroy($id);
                 break;
             default:
                 return redirect()->back()->with('error', 'Invalid type.');

@@ -83,6 +83,16 @@ class EmployeeProfile extends Model
         return $this->hasMany(Increment::class, 'employee_profile_id');
     }
 
+    public function leaveBalances(): HasMany
+    {
+        return $this->hasMany(LeaveBalance::class, 'employee_profile_id');
+    }
+
+    public function leaveApplications(): HasMany
+    {
+        return $this->hasMany(LeaveApplication::class, 'employee_profile_id');
+    }
+
     public function bankInfo(): HasOne
     {
         return $this->hasOne(BankInformation::class, 'employee_profile_id');

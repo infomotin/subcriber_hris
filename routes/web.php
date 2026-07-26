@@ -162,6 +162,10 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('shifts', Hris\ShiftController::class);
             Route::resource('employees', Hris\EmployeeController::class);
             Route::resource('kpis', Hris\KpiController::class);
+            Route::get('leaves/apply', [Hris\LeaveController::class, 'apply'])->name('leaves.apply');
+            Route::get('leaves/balance', [Hris\LeaveController::class, 'getBalance'])->name('leaves.balance');
+            Route::post('leaves/{leave}/approve', [Hris\LeaveController::class, 'approve'])->name('leaves.approve');
+            Route::post('leaves/{leave}/reject', [Hris\LeaveController::class, 'reject'])->name('leaves.reject');
             Route::resource('leaves', Hris\LeaveController::class);
             Route::get('promotions/employee-search', [Hris\PromotionController::class, 'getEmployee'])->name('promotions.employee-search');
             Route::resource('promotions', Hris\PromotionController::class)->except(['edit', 'update', 'destroy']);

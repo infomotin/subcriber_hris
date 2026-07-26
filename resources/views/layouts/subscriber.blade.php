@@ -137,14 +137,14 @@
 
             <!-- Databases Submenu -->
             <li>
-                <a href="#databasesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? '' : 'collapsed' }}">
+                <a href="#databasesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*', 'subscriber.hris.leaves.apply', 'subscriber.hris.leaves.balance') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
                         <i class="bx bx-data"></i>
                         <span>Databases</span>
                     </div>
                     <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? 'show' : '' }}" id="databasesSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*', 'subscriber.hris.leaves.apply', 'subscriber.hris.leaves.balance') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? 'show' : '' }}" id="databasesSubmenu">
                     <li class="{{ request()->routeIs('subscriber.hris.employees.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.employees.index') }}" class="font-size-13 py-2">
                             <i class="bx bx-user-plus me-2"></i> Employee Entry
@@ -158,6 +158,11 @@
                     <li class="{{ request()->routeIs('subscriber.hris.increments.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.increments.index') }}" class="font-size-13 py-2">
                             <i class="bx bx-trending-up me-2"></i> Increments
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.leaves.apply', 'subscriber.hris.leaves.balance') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.leaves.apply') }}" class="font-size-13 py-2">
+                            <i class="bx bx-calendar-check me-2"></i> Leave Application
                         </a>
                     </li>
                     <li class="{{ request()->routeIs('subscriber.hris.promotions.*') ? 'active' : '' }}">

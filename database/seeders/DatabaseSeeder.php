@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             HrisMoreEmployeeSeeder::class,
             IncrementRuleSeeder::class,
             IncrementSeeder::class,
+            PromotionSeeder::class,
+            LeaveSeeder::class,
         ]);
     }
 }
