@@ -92,7 +92,7 @@ class GeneralController extends Controller
                     $query->whereHas('verifications', fn($vq) => $vq->where('section', request('section'))->where('status', 'pending'));
                 }
 
-                $employees = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
+                $employees = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
                 $sections = EmployeeVerification::SECTIONS;
                 return view('subscriber.hris.verification', compact('employees', 'sections'));
                 break;
@@ -182,6 +182,7 @@ class GeneralController extends Controller
             'employee_id' => 'required|exists:employee_profiles,id',
             'section' => 'required|string|in:' . implode(',', array_keys(EmployeeVerification::SECTIONS)),
             'verified_by' => 'nullable|string|max:100',
+            'verification_method' => 'required|string|in:' . implode(',', array_keys(EmployeeVerification::METHODS)),
         ]);
 
         $employee = EmployeeProfile::findOrFail($validated['employee_id']);
@@ -191,6 +192,7 @@ class GeneralController extends Controller
             $verification->update([
                 'status' => 'verified',
                 'verified_by' => $validated['verified_by'] ?? EmployeeVerification::VERIFIED_BY[$validated['section']] ?? 'HR Admin',
+                'verification_method' => $validated['verification_method'],
                 'verified_at' => now(),
                 'expires_at' => now()->addYear(),
                 'remarks' => $request->input('remarks', 'Verified successfully'),

@@ -61,6 +61,9 @@ class EmployeeController extends Controller
         if (request('shift_id')) {
             $query->where('shift_id', request('shift_id'));
         }
+        if (request('employee_type')) {
+            $query->where('employee_type', request('employee_type'));
+        }
 
         $employees = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
         $departments = Department::orderBy('name', 'asc')->get();
@@ -113,6 +116,9 @@ class EmployeeController extends Controller
             'phone_number' => 'required|string|max:20',
             'blood_group' => 'nullable|string|max:5',
             'status' => 'required|string',
+            'employee_type' => 'nullable|string|in:worker,staff,manager',
+            'overtime_eligible' => 'nullable|boolean',
+            'overtime_rate' => 'nullable|numeric|min:0',
             // Personal info
             'nid' => 'nullable|string|max:30',
             'birth_certificate' => 'nullable|string|max:30',
@@ -214,6 +220,9 @@ class EmployeeController extends Controller
                 'department_id' => $validated['department_id'],
                 'designation_id' => $validated['designation_id'],
                 'shift_id' => $validated['shift_id'] ?? null,
+                'employee_type' => $validated['employee_type'] ?? null,
+                'overtime_eligible' => $request->boolean('overtime_eligible'),
+                'overtime_rate' => $validated['overtime_rate'] ?? null,
                 'employee_id' => $validated['employee_id'],
                 'joining_date' => $validated['joining_date'],
                 'gender' => $validated['gender'],
@@ -417,6 +426,9 @@ class EmployeeController extends Controller
             'phone_number' => 'required|string|max:20',
             'blood_group' => 'nullable|string|max:5',
             'status' => 'required|string',
+            'employee_type' => 'nullable|string|in:worker,staff,manager',
+            'overtime_eligible' => 'nullable|boolean',
+            'overtime_rate' => 'nullable|numeric|min:0',
             // Personal info
             'nid' => 'nullable|string|max:30',
             'birth_certificate' => 'nullable|string|max:30',
@@ -518,6 +530,9 @@ class EmployeeController extends Controller
                 'department_id' => $validated['department_id'],
                 'designation_id' => $validated['designation_id'],
                 'shift_id' => $validated['shift_id'] ?? null,
+                'employee_type' => $validated['employee_type'] ?? null,
+                'overtime_eligible' => $request->boolean('overtime_eligible'),
+                'overtime_rate' => $validated['overtime_rate'] ?? null,
                 'employee_id' => $validated['employee_id'],
                 'joining_date' => $validated['joining_date'],
                 'gender' => $validated['gender'],

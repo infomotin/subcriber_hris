@@ -315,6 +315,35 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="employee_type" class="form-label">Employee Type</label>
+                                    <select class="form-select" id="employee_type" name="employee_type">
+                                        <option value="">Select Type</option>
+                                        <option value="worker" {{ old('employee_type') === 'worker' ? 'selected' : '' }}>Worker</option>
+                                        <option value="staff" {{ old('employee_type') === 'staff' ? 'selected' : '' }}>Staff</option>
+                                        <option value="manager" {{ old('employee_type') === 'manager' ? 'selected' : '' }}>Manager</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4 pt-2">
+                                        <input type="checkbox" class="form-check-input" id="overtime_eligible" name="overtime_eligible" value="1" {{ old('overtime_eligible') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-semibold text-slate-700" for="overtime_eligible">
+                                            <i class="bx bx-time-five text-primary me-1 align-middle"></i> Eligible for Overtime
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="overtime_rate" class="form-label">Overtime Rate (BDT/hr)</label>
+                                    <input type="number" class="form-control" id="overtime_rate" name="overtime_rate" value="{{ old('overtime_rate') }}" placeholder="e.g. 250" step="0.01">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

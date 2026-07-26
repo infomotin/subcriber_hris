@@ -16,6 +16,7 @@ class EmployeeVerification extends Model
         'section',
         'status',
         'verified_by',
+        'verification_method',
         'remarks',
         'verified_at',
         'expires_at',
@@ -33,6 +34,17 @@ class EmployeeVerification extends Model
         'bank'       => 'Bank Account Details',
         'address'    => 'Address Information',
         'documents'  => 'Documents (NOC/Police Clearance)',
+    ];
+
+    public const METHODS = [
+        'document_check' => 'Document Check',
+        'in_person' => 'In-Person Verification',
+        'online_verification' => 'Online Verification',
+        'third_party' => 'Third-Party Verification',
+        'self_declaration' => 'Self Declaration',
+        'supervisor_confirmation' => 'Supervisor Confirmation',
+        'bank_confirmation' => 'Bank Confirmation',
+        'physical_id_check' => 'Physical ID Check',
     ];
 
     public const VERIFIED_BY = [

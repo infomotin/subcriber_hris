@@ -163,6 +163,8 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('employees', Hris\EmployeeController::class);
             Route::resource('kpis', Hris\KpiController::class);
             Route::resource('leaves', Hris\LeaveController::class);
+            Route::resource('promotions', Hris\PromotionController::class)->except(['edit', 'update', 'destroy']);
+            Route::get('promotions/employee-search', [Hris\PromotionController::class, 'getEmployee'])->name('promotions.employee-search');
         Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
         Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
         Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');

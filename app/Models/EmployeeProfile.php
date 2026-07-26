@@ -37,7 +37,15 @@ class EmployeeProfile extends Model
         'guardian_name',
         'guardian_relation',
         'guardian_phone',
-        'shift_id'
+        'shift_id',
+        'employee_type',
+        'overtime_eligible',
+        'overtime_rate',
+    ];
+
+    protected $casts = [
+        'overtime_eligible' => 'boolean',
+        'overtime_rate' => 'decimal:2',
     ];
 
     public function tenant(): BelongsTo

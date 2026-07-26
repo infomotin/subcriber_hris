@@ -179,15 +179,13 @@
                                             @endif
                                         </span>
                                     @else
-                                        <form method="POST" action="{{ route('subscriber.hris.general.verification.verify') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="employee_id" value="{{ $emp->id }}">
-                                            <input type="hidden" name="section" value="{{ $key }}">
-                                            <input type="hidden" name="verified_by" value="{{ \App\Models\EmployeeVerification::VERIFIED_BY[$key] ?? 'HR Admin' }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary verify-btn">
-                                                <i class="bx bx-shield me-0.5 font-size-13 align-middle"></i> Verify Now
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-primary verify-btn"
+                                            data-bs-toggle="modal" data-bs-target="#verifyModal"
+                                            data-employee-id="{{ $emp->id }}"
+                                            data-section="{{ $key }}"
+                                            data-verified-by="{{ \App\Models\EmployeeVerification::VERIFIED_BY[$key] ?? 'HR Admin' }}">
+                                            <i class="bx bx-shield me-0.5 font-size-13 align-middle"></i> Verify Now
+                                        </button>
                                     @endif
                                 </div>
                             </div>
@@ -213,3 +211,83 @@
     </div>
 @endif
 @endsection
+
+@section('modals')
+<div class="modal fade" id="verifyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 16px;">
+            <form method="POST" action="{{ route('subscriber.hris.general.verification.verify') }}" id="verifyForm">
+                @csrf
+                <input type="hidden" name="employee_id" id="verify_employee_id">
+                <input type="hidden" name="section" id="verify_section">
+                <input type="hidden" name="verified_by" id="verify_verified_by">
+                <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                    <div>
+                        <h5 class="modal-title fw-bold text-slate-800" style="font-family: 'Poppins', sans-serif;">
+                            <i class="bx bx-shield-quarter text-primary me-1.5 align-middle font-size-22"></i> Verify Section
+                        </h5>
+                        <p class="text-muted font-size-13 mb-0 mt-1">Select the verification method used to confirm this data.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 py-4">
+                    <div class="vstack gap-2" id="methodOptions">
+                        @foreach(\App\Models\EmployeeVerification::METHODS as $value => $label)
+                        <div class="form-check p-3 rounded-3 border method-option" style="cursor: pointer; transition: all 0.15s;">
+                            <input class="form-check-input" type="radio" name="verification_method" id="method_{{ $value }}" value="{{ $value }}" required>
+                            <label class="form-check-label fw-semibold text-slate-700 w-100" for="method_{{ $value }}" style="cursor: pointer;">
+                                {{ $label }}
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bx bx-shield me-1.5 align-middle font-size-16"></i> Confirm Verification
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const verifyModal = document.getElementById('verifyModal');
+    if (!verifyModal) return;
+
+    verifyModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        document.getElementById('verify_employee_id').value = button.dataset.employeeId;
+        document.getElementById('verify_section').value = button.dataset.section;
+        document.getElementById('verify_verified_by').value = button.dataset.verifiedBy;
+
+        const radios = document.querySelectorAll('input[name="verification_method"]');
+        radios.forEach(r => r.checked = false);
+
+        const options = document.querySelectorAll('.method-option');
+        options.forEach(o => {
+            o.style.borderColor = '#dee2e6';
+            o.style.background = '';
+        });
+    });
+
+    document.querySelectorAll('.method-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            document.querySelectorAll('.method-option').forEach(o => {
+                o.style.borderColor = '#dee2e6';
+                o.style.background = '';
+            });
+            this.style.borderColor = '#5f5af6';
+            this.style.background = 'rgba(95,90,246,0.04)';
+        });
+    });
+});
+</script>
+@endpush
