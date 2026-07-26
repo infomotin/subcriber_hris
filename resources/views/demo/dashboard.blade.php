@@ -6,9 +6,9 @@
     <title>Public Sandbox Demo | ZKTeco ADMS SaaS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        body { background: #f8f9fa; font-family: 'Inter', sans-serif; }
-        .demo-nav { background: #556ee6; color: #fff; padding: 1rem 2rem; }
+        .demo-nav { background: #4f46e5; color: #fff; padding: 1rem 2rem; }
     </style>
 </head>
 <body>

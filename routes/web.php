@@ -32,6 +32,7 @@ use App\Http\Controllers\SystemAdmin\SecurityAuditController;
 use App\Http\Controllers\SystemAdmin\SystemMonitoringController;
 use App\Http\Controllers\SystemAdmin\WebsiteManagerController;
 use App\Http\Middleware\EnsureAdminRole;
+use App\Http\Controllers\Subscriber\Hris;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -153,6 +154,18 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         // Plans & Checkout
         Route::get('/plans', [SubscriptionCheckoutController::class, 'plans'])->name('plans');
         Route::post('/checkout', [SubscriptionCheckoutController::class, 'checkout'])->name('checkout');
+
+        // HRIS Modules
+        Route::prefix('hris')->name('hris.')->group(function () {
+            Route::resource('departments', Hris\DepartmentController::class);
+            Route::resource('designations', Hris\DesignationController::class);
+            Route::resource('shifts', Hris\ShiftController::class);
+            Route::resource('employees', Hris\EmployeeController::class);
+            Route::resource('kpis', Hris\KpiController::class);
+            Route::resource('leaves', Hris\LeaveController::class);
+            Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
+            Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
+        });
     });
 
     // Protected Admin Routes (Strictly Restricted to System Admin & Business Admin)

@@ -30,16 +30,34 @@ class DatabaseManagerController extends Controller
         $tablesStats = $this->getTableStats();
         $isolationAudit = $this->getIsolationAudit();
 
-        $allTables = DB::select("SHOW TABLE STATUS");
-        $tablesInfo = collect($allTables)->map(function ($t) {
-            return [
-                'name' => $t->Name,
-                'engine' => $t->Engine,
-                'rows' => $t->Rows,
-                'collation' => $t->Collation,
-                'size' => $this->formatBytes(($t->Data_length + $t->Index_length)),
-            ];
-        });
+        if (DB::getDriverName() === 'sqlite') {
+            $allTables = DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+            $tablesInfo = collect($allTables)->map(function ($t) {
+                $tableName = $t->name;
+                $rowCount = 0;
+                try {
+                    $rowCount = DB::table($tableName)->count();
+                } catch (\Exception $e) {}
+                return [
+                    'name' => $tableName,
+                    'engine' => 'SQLite',
+                    'rows' => $rowCount,
+                    'collation' => 'binary',
+                    'size' => '0 B',
+                ];
+            });
+        } else {
+            $allTables = DB::select("SHOW TABLE STATUS");
+            $tablesInfo = collect($allTables)->map(function ($t) {
+                return [
+                    'name' => $t->Name,
+                    'engine' => $t->Engine,
+                    'rows' => $t->Rows,
+                    'collation' => $t->Collation,
+                    'size' => $this->formatBytes(($t->Data_length + $t->Index_length)),
+                ];
+            });
+        }
 
         $backups = $this->getBackups();
 
@@ -182,19 +200,38 @@ class DatabaseManagerController extends Controller
         }
     }
 
-    public function showTable($table)
+    public function showTable(Request $request, $table)
     {
         if (!$this->tableExists($table)) {
             return redirect()->route('admin.system.database.index')
                 ->with('error', "Table '{$table}' does not exist.");
         }
 
-        $columns = collect(DB::select("SHOW COLUMNS FROM `{$table}`"));
-        $rows = DB::table($table)->paginate(50);
+        try {
+            $columns = $this->getColumns($table);
 
-        $primaryKey = $columns->firstWhere('Key', 'PRI')?->Field ?? 'id';
+            $page = max(1, (int) $request->query('page', 1));
+            $perPage = 25;
+            $offset = ($page - 1) * $perPage;
 
-        return view('system_admin.database.table', compact('table', 'columns', 'rows', 'primaryKey'));
+            $allCols = $columns->pluck('Field')->toArray();
+
+            $total = DB::table($table)->count();
+            $rows = DB::table($table)
+                ->select($allCols)
+                ->skip($offset)
+                ->take($perPage)
+                ->get();
+
+            $primaryKey = $columns->firstWhere('Key', 'PRI')?->Field ?? 'id';
+
+            return view('system_admin.database.table', compact(
+                'table', 'columns', 'rows', 'primaryKey', 'page', 'perPage', 'total'
+            ));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.system.database.index')
+                ->with('error', "Error browsing table '{$table}': {$e->getMessage()}");
+        }
     }
 
     public function insertRow(Request $request, $table)
@@ -223,7 +260,7 @@ class DatabaseManagerController extends Controller
                 ->with('error', "Table '{$table}' does not exist.");
         }
 
-        $columns = collect(DB::select("SHOW COLUMNS FROM `{$table}`"));
+        $columns = $this->getColumns($table);
         $primaryKey = $columns->firstWhere('Key', 'PRI')?->Field ?? 'id';
 
         $data = $request->except('_token', '_method');
@@ -245,7 +282,7 @@ class DatabaseManagerController extends Controller
                 ->with('error', "Table '{$table}' does not exist.");
         }
 
-        $columns = collect(DB::select("SHOW COLUMNS FROM `{$table}`"));
+        $columns = $this->getColumns($table);
         $primaryKey = $columns->firstWhere('Key', 'PRI')?->Field ?? 'id';
 
         try {
@@ -312,9 +349,30 @@ class DatabaseManagerController extends Controller
 
     private function tableExists($table): bool
     {
+        if (DB::getDriverName() === 'sqlite') {
+            $tables = DB::select("SELECT name FROM sqlite_master WHERE type='table'");
+            return collect($tables)->pluck('name')->contains($table);
+        }
         $tables = DB::select("SHOW TABLES");
         $key = "Tables_in_" . config('database.connections.mysql.database');
         return collect($tables)->pluck($key)->contains($table);
+    }
+
+    private function getColumns($table)
+    {
+        if (DB::getDriverName() === 'sqlite') {
+            $rawColumns = DB::select("PRAGMA table_info(`{$table}`)");
+            return collect($rawColumns)->map(function ($c) {
+                return (object)[
+                    'Field' => $c->name,
+                    'Key' => $c->pk ? 'PRI' : '',
+                    'Type' => $c->type,
+                    'Null' => $c->notnull ? 'NO' : 'YES',
+                    'Default' => $c->dflt_value,
+                ];
+            });
+        }
+        return collect(DB::select("SHOW COLUMNS FROM `{$table}`"));
     }
 
     private function getTableStats(): array

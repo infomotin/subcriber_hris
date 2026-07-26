@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1"><i class="bx bx-table text-primary me-2 font-size-22"></i> Table: <code>{{ $table }}</code></h4>
-        <p class="text-muted font-size-13 mb-0">{{ $columns->count() }} columns &middot; {{ $rows->total() }} total rows</p>
+        <p class="text-muted font-size-13 mb-0">{{ $columns->count() }} columns &middot; {{ number_format($total) }} total rows</p>
     </div>
     <div>
         <a href="{{ route('admin.system.database.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
@@ -146,8 +146,16 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-white py-3">
-                {{ $rows->links() }}
+            <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
+                <span class="text-muted font-size-13">Page {{ $page }} of {{ max(1, (int) ceil($total / $perPage)) }}</span>
+                <div>
+                    @if($page > 1)
+                        <a href="{{ route('admin.system.database.table', [$table, 'page' => $page - 1]) }}" class="btn btn-sm btn-outline-primary">Prev</a>
+                    @endif
+                    @if($page * $perPage < $total)
+                        <a href="{{ route('admin.system.database.table', [$table, 'page' => $page + 1]) }}" class="btn btn-sm btn-outline-primary">Next</a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

@@ -113,7 +113,7 @@ class AdmsProtocolAndAdminTest extends TestCase
         $adminUser->assignRole('System Admin');
 
         $this->get('/')->assertStatus(200);
-        $this->actingAs($adminUser)->get('/admin/dashboard')->assertStatus(200);
+        $this->actingAs($adminUser)->get('/admin/dashboard')->assertRedirect(route('admin.system.dashboard'));
         $this->actingAs($adminUser)->get('/admin/devices')->assertStatus(200);
         $this->actingAs($adminUser)->get('/admin/attendance')->assertStatus(200);
         $this->actingAs($adminUser)->get('/admin/users')->assertStatus(200);

@@ -13,154 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
-    <style>
-        :root {
-            --sk-sidebar-width: 250px;
-            --sk-sidebar-bg: #1e2229;
-            --sk-sidebar-color: #a6b0cf;
-            --sk-sidebar-active: #ffffff;
-            --sk-sidebar-active-bg: #2b3035;
-            --sk-header-height: 70px;
-            --sk-body-bg: #f8f8fb;
-            --sk-primary: #556ee6;
-        }
-
-        body {
-            font-family: 'Poppins', 'Inter', sans-serif;
-            background-color: var(--sk-body-bg);
-            color: #495057;
-            overflow-x: hidden;
-        }
-
-        #vertical-menu {
-            width: var(--sk-sidebar-width);
-            background: var(--sk-sidebar-bg);
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 1001;
-            box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
-        }
-
-        .navbar-brand-box {
-            height: var(--sk-header-height);
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            background: var(--sk-sidebar-bg);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .brand-logo {
-            color: #fff;
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-logo i {
-            color: var(--sk-primary);
-            font-size: 1.6rem;
-        }
-
-        .sidebar-menu {
-            padding: 1.5rem 0;
-            list-style: none;
-            margin: 0;
-        }
-
-        .menu-title {
-            padding: 12px 20px 8px 20px;
-            letter-spacing: .05em;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #6a7187;
-            font-weight: 600;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: var(--sk-sidebar-color);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-menu li a i {
-            font-size: 1.25rem;
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .sidebar-menu li a:hover,
-        .sidebar-menu li.active a {
-            color: var(--sk-sidebar-active);
-            background: var(--sk-sidebar-active-bg);
-            border-left-color: var(--sk-primary);
-        }
-
-        #page-topbar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: var(--sk-sidebar-width);
-            height: var(--sk-header-height);
-            background: #ffffff;
-            z-index: 1000;
-            box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-        }
-
-        .main-content {
-            margin-left: var(--sk-sidebar-width);
-            margin-top: var(--sk-header-height);
-            padding: 2rem 1.5rem;
-            min-height: calc(100vh - var(--sk-header-height));
-        }
-
-        .stat-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .page-title-box {
-            padding-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .page-title-box h4 {
-            font-size: 1.125rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin: 0;
-            color: #495057;
-        }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 
@@ -174,19 +27,19 @@
         </div>
 
         <ul class="sidebar-menu">
-            <li class="menu-title">Subscriber Navigation</li>
+            <li class="menu-title">Biometric ADMS Hub</li>
             
             <li class="{{ request()->routeIs('subscriber.dashboard') ? 'active' : '' }}">
                 <a href="{{ route('subscriber.dashboard') }}">
                     <i class="bx bx-tachometer"></i>
-                    <span>Dashboard & Subscription</span>
+                    <span>Dashboard & Sub</span>
                 </a>
             </li>
 
             <li class="{{ request()->routeIs('subscriber.devices.*') ? 'active' : '' }}">
                 <a href="{{ route('subscriber.devices.index') }}">
                     <i class="bx bx-chip"></i>
-                    <span>My Biometric Machines</span>
+                    <span>Biometric Machines</span>
                 </a>
             </li>
 
@@ -216,7 +69,7 @@
             <li class="{{ request()->routeIs('subscriber.mock.*') ? 'active' : '' }}">
                 <a href="{{ route('subscriber.mock.viewer') }}">
                     <i class="bx bx-server"></i>
-                    <span>Mock Server Inspector</span>
+                    <span>Mock Inspector</span>
                 </a>
             </li>
 
@@ -226,12 +79,203 @@
                     <span>Subscription Quota</span>
                 </a>
             </li>
+
+            <li class="menu-title">HRIR (HR & Admin)</li>
+            
+            <!-- Setup Submenu -->
+            <li>
+                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-cog text-slate-400"></i>
+                        <span>Setup</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.hris.departments.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.departments.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-git-branch me-2"></i> Department Setup
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.designations.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.designations.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-user-voice me-2"></i> Designation Setup
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.shifts.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.shifts.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-time-five me-2"></i> Shift Setup
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'calendar' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'calendar') }}" class="font-size-13 py-2">
+                            <i class="bx bx-calendar-event me-2"></i> Calendar Setup
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'addresses' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'addresses') }}" class="font-size-13 py-2">
+                            <i class="bx bx-map-pin me-2"></i> Address Setup
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'other' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'other') }}" class="font-size-13 py-2">
+                            <i class="bx bx-dots-horizontal-rounded me-2"></i> Other Setup
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Databases Submenu -->
+            <li>
+                <a href="#databasesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-data text-slate-400"></i>
+                        <span>Databases</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? 'show' : '' }}" id="databasesSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.hris.employees.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.employees.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-user-plus me-2"></i> Employee Entry
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'verification' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'verification') }}" class="font-size-13 py-2">
+                            <i class="bx bx-shield-quarter me-2"></i> Data Verification
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'increments' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'increments') }}" class="font-size-13 py-2">
+                            <i class="bx bx-trending-up me-2"></i> Increments
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.kpis.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.kpis.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-bar-chart-alt-2 me-2"></i> KPI Goals
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Tools Submenu -->
+            <li>
+                <a href="#toolsSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.leaves.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['applications', 'advances'])) ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-wrench text-slate-400"></i>
+                        <span>Tools</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.leaves.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['applications', 'advances'])) ? 'show' : '' }}" id="toolsSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'applications' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'applications') }}" class="font-size-13 py-2">
+                            <i class="bx bx-receipt me-2"></i> Applications
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.leaves.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.leaves.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-calendar-exclamation me-2"></i> Leaves Management
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'advances' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'advances') }}" class="font-size-13 py-2">
+                            <i class="bx bx-credit-card-front me-2"></i> Salary Advances
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Reports Submenu -->
+            <li>
+                <a href="#reportsSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ (request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'reports') ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-file text-slate-400"></i>
+                        <span>Reports</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ (request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'reports') ? 'show' : '' }}" id="reportsSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'reports' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.general.show', 'reports') }}" class="font-size-13 py-2">
+                            <i class="bx bx-file-blank me-2"></i> Related Reports
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-title">Payroll Module</li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-money text-slate-400"></i>
+                    <span>Salary Sheets</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-receipt text-slate-400"></i>
+                    <span>Generate Payslips</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+
+            <li class="menu-title">Accounts Module</li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-wallet text-slate-400"></i>
+                    <span>General Ledgers</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-credit-card text-slate-400"></i>
+                    <span>Expenses & Bills</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+
+            <li class="menu-title">Purchase (Purcess)</li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-cart text-slate-400"></i>
+                    <span>Purchase Orders</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-store-alt text-slate-400"></i>
+                    <span>Supplier Records</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+
+            <li class="menu-title">Inventory Module</li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-package text-slate-400"></i>
+                    <span>Items & Stocks</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
+                    <i class="bx bx-map-pin text-slate-400"></i>
+                    <span>Warehouses</span>
+                    <span class="badge bg-soft-primary text-primary ms-auto font-size-10">Soon</span>
+                </a>
+            </li>
         </ul>
     </div>
 
     <!-- Top Navigation -->
     <header id="page-topbar">
         <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect border-0" id="sidebar-toggle">
+                <i class="fa fa-fw fa-bars text-secondary" style="font-size: 1.2rem;"></i>
+            </button>
             <span class="badge bg-primary px-3 py-2 font-size-12">
                 Subscriber Portal: {{ auth()->user()->tenant->name ?? 'Organization' }}
             </span>
@@ -263,24 +307,42 @@
     </header>
 
     <!-- Main Content Wrapper -->
-    <div class="main-content">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bx bx-check-circle me-2 font-size-18 align-middle"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+    <div class="main-content d-flex flex-column justify-content-between">
+        <div class="content-body flex-grow-1">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="bx bx-check-circle me-2 font-size-18 align-middle"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bx bx-error-circle me-2 font-size-18 align-middle"></i>
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="bx bx-error-circle me-2 font-size-18 align-middle"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-        @yield('content')
+            @yield('content')
+        </div>
+
+        <!-- Tiny Footer -->
+        <footer class="footer mt-5 py-3 border-top text-slate-500 text-xs">
+            <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <strong>Subscriber:</strong> {{ auth()->user()->tenant->name ?? 'Organization' }}
+                    <span class="badge bg-soft-success text-success ms-2">{{ strtoupper(auth()->user()->tenant->status ?? 'ACTIVE') }}</span>
+                    @if(isset(auth()->user()->tenant->tenant_token))
+                        <span class="text-slate-400 ms-3 d-none d-sm-inline">Token: <code>{{ auth()->user()->tenant->tenant_token }}</code></span>
+                    @endif
+                </div>
+                <div>
+                    <span>Powered by <a href="https://nexozaint.com" target="_blank" class="fw-bold text-indigo-600 text-decoration-none hover:text-indigo-700">Nexozaint</a></span>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

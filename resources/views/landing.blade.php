@@ -15,11 +15,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #556ee6 0%, #343a40 100%);
-            --hero-bg: #1e2229;
-            --accent: #34c38f;
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #0f172a 100%);
+            --hero-bg: #0f172a;
+            --accent: #10b981;
         }
 
         body {
@@ -127,7 +129,7 @@
         }
 
         .btn-primary-custom {
-            background: #556ee6;
+            background: #4f46e5;
             border: none;
             padding: 12px 28px;
             border-radius: 8px;
@@ -137,9 +139,9 @@
         }
 
         .btn-primary-custom:hover {
-            background: #4458b8;
+            background: #4338ca;
             color: #fff;
-            box-shadow: 0 8px 20px rgba(85, 110, 230, 0.3);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
         }
 
         /* Role Pill Cards */

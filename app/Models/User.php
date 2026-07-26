@@ -36,4 +36,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Tenant::class);
     }
+
+    public function hasConfirmedTwoFactor(): bool
+    {
+        return !is_null($this->two_factor_confirmed_at);
+    }
 }

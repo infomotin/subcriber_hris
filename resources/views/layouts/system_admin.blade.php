@@ -13,130 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
-    <style>
-        :root {
-            --sk-sidebar-width: 260px;
-            --sk-sidebar-bg: #1a1d21;
-            --sk-sidebar-color: #98a6ad;
-            --sk-sidebar-active: #ffffff;
-            --sk-sidebar-active-bg: #262a30;
-            --sk-header-height: 70px;
-            --sk-body-bg: #f4f5f8;
-            --sk-primary: #556ee6;
-        }
-
-        body {
-            font-family: 'Poppins', 'Inter', sans-serif;
-            background-color: var(--sk-body-bg);
-            color: #495057;
-            overflow-x: hidden;
-        }
-
-        #vertical-menu {
-            width: var(--sk-sidebar-width);
-            background: var(--sk-sidebar-bg);
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 1001;
-            box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.05);
-            overflow-y: auto;
-        }
-
-        .navbar-brand-box {
-            height: var(--sk-header-height);
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            background: #14171a;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .brand-logo {
-            color: #fff;
-            font-size: 1.15rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-logo i {
-            color: #f1b44c;
-            font-size: 1.6rem;
-        }
-
-        .sidebar-menu {
-            padding: 1rem 0;
-            list-style: none;
-            margin: 0;
-        }
-
-        .menu-title {
-            padding: 14px 20px 6px 20px;
-            letter-spacing: .05em;
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #6a7187;
-            font-weight: 700;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 0.7rem 1.5rem;
-            color: var(--sk-sidebar-color);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-menu li a i {
-            font-size: 1.25rem;
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .sidebar-menu li a:hover,
-        .sidebar-menu li.active a {
-            color: var(--sk-sidebar-active);
-            background: var(--sk-sidebar-active-bg);
-            border-left-color: #f1b44c;
-        }
-
-        #page-topbar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: var(--sk-sidebar-width);
-            height: var(--sk-header-height);
-            background: #ffffff;
-            z-index: 1000;
-            box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-        }
-
-        .main-content {
-            margin-left: var(--sk-sidebar-width);
-            margin-top: var(--sk-header-height);
-            padding: 2rem 1.5rem;
-            min-height: calc(100vh - var(--sk-header-height));
-        }
-
-        .badge-system {
-            background-color: #f1b44c;
-            color: #111;
-            font-weight: 700;
-        }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 
@@ -226,6 +103,9 @@
     <!-- Top Navigation -->
     <header id="page-topbar">
         <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect border-0" id="sidebar-toggle">
+                <i class="fa fa-fw fa-bars text-secondary" style="font-size: 1.2rem;"></i>
+            </button>
             <span class="badge badge-system px-3 py-2 font-size-12">
                 <i class="bx bx-shield-quarter me-1"></i> System Admin Privilege
             </span>
