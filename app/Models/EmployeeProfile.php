@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\WorkShift;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Traits\Multitenantable;
 
 class EmployeeProfile extends Model
@@ -23,7 +25,19 @@ class EmployeeProfile extends Model
         'dob',
         'phone_number',
         'blood_group',
-        'status'
+        'status',
+        'nid',
+        'birth_certificate',
+        'religion',
+        'marital_status',
+        'father_name',
+        'father_occupation',
+        'mother_name',
+        'mother_occupation',
+        'guardian_name',
+        'guardian_relation',
+        'guardian_phone',
+        'shift_id'
     ];
 
     public function tenant(): BelongsTo
@@ -44,6 +58,11 @@ class EmployeeProfile extends Model
     public function designation(): BelongsTo
     {
         return $this->belongsTo(Designation::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(WorkShift::class, 'shift_id');
     }
 
     public function bankInfo(): HasOne
@@ -94,5 +113,40 @@ class EmployeeProfile extends Model
     public function images(): HasMany
     {
         return $this->hasMany(EmployeeImage::class, 'employee_profile_id');
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(EmployeeDocument::class, 'documentable');
+    }
+
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(EmployeeVerification::class, 'employee_profile_id');
+    }
+
+    public function verificationProgress(): int
+    {
+        $total = count(EmployeeVerification::SECTIONS);
+        $done = $this->verifications()
+            ->where('status', 'verified')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->count();
+        return $total > 0 ? (int) round(($done / $total) * 100) : 0;
+    }
+
+    public function isFullyVerified(): bool
+    {
+        return $this->verificationProgress() === 100;
+    }
+
+    public function verificationBadge(): string
+    {
+        $pct = $this->verificationProgress();
+        if ($pct === 100) return 'bg-soft-success text-success';
+        if ($pct >= 50) return 'bg-soft-warning text-warning';
+        return 'bg-soft-danger text-danger';
     }
 }

@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Subscriber\Hris;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\EmployeeProfile;
+use App\Models\EmployeeVerification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GeneralController extends Controller
 {
@@ -69,19 +72,29 @@ class GeneralController extends Controller
                 ];
                 break;
             case 'verification':
-                $config = [
-                    'title' => 'Employee Data Verification Portal',
-                    'subtitle' => 'Verify employee master data inputs and files matching requirements',
-                    'fields' => [
-                        ['name' => 'employee_id', 'label' => 'Select Employee to Verify', 'type' => 'text', 'placeholder' => 'e.g. EMP-1094'],
-                        ['name' => 'document_status', 'label' => 'Document Verification Status', 'type' => 'select', 'options' => ['verified' => 'Approved & Verified', 'pending' => 'Pending Review']]
-                    ],
-                    'dummy_data' => [
-                        ['id' => 1, 'col1' => 'EMP-1002', 'col2' => 'Rahim Ahmed', 'col3' => 'NID, Certificate verified', 'col4' => 'Approved & Verified'],
-                        ['id' => 2, 'col1' => 'EMP-1005', 'col2' => 'Karim Hasan', 'col3' => 'Profile photos mismatch', 'col4' => 'Pending Review']
-                    ],
-                    'headers' => ['Employee ID', 'Name', 'Audit Status', 'Verification']
-                ];
+                $query = EmployeeProfile::with(['user', 'department', 'designation', 'verifications']);
+
+                $search = request('search');
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('employee_id', 'like', "%{$search}%")
+                          ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"));
+                    });
+                }
+                if (request('status_filter') === 'verified') {
+                    $query->whereHas('verifications', fn($vq) => $vq->where('status', 'verified'), '=', 6);
+                } elseif (request('status_filter') === 'pending') {
+                    $query->whereHas('verifications', fn($vq) => $vq->where('status', 'pending'), '>', 0);
+                } elseif (request('status_filter') === 'expired') {
+                    $query->whereHas('verifications', fn($vq) => $vq->where('expires_at', '<', now()), '>', 0);
+                }
+                if (request('section')) {
+                    $query->whereHas('verifications', fn($vq) => $vq->where('section', request('section'))->where('status', 'pending'));
+                }
+
+                $employees = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
+                $sections = EmployeeVerification::SECTIONS;
+                return view('subscriber.hris.verification', compact('employees', 'sections'));
                 break;
             case 'increments':
                 $config = [
@@ -161,5 +174,29 @@ class GeneralController extends Controller
     public function submit(Request $request, $module)
     {
         return redirect()->back()->with('success', 'Form submitted successfully! (Mock Action Saved).');
+    }
+
+    public function verify(Request $request)
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employee_profiles,id',
+            'section' => 'required|string|in:' . implode(',', array_keys(EmployeeVerification::SECTIONS)),
+            'verified_by' => 'nullable|string|max:100',
+        ]);
+
+        $employee = EmployeeProfile::findOrFail($validated['employee_id']);
+        $verification = $employee->verifications()->where('section', $validated['section'])->first();
+
+        if ($verification) {
+            $verification->update([
+                'status' => 'verified',
+                'verified_by' => $validated['verified_by'] ?? EmployeeVerification::VERIFIED_BY[$validated['section']] ?? 'HR Admin',
+                'verified_at' => now(),
+                'expires_at' => now()->addYear(),
+                'remarks' => $request->input('remarks', 'Verified successfully'),
+            ]);
+        }
+
+        return redirect()->back()->with('success', ucfirst($validated['section']) . ' section verified successfully for ' . ($employee->user->name ?? 'employee') . '.');
     }
 }

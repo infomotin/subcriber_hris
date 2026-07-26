@@ -282,6 +282,8 @@
             @endif
 
             @yield('content')
+
+            @yield('modals')
         </div>
 
         <!-- Footer -->

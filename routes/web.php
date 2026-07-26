@@ -163,8 +163,9 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('employees', Hris\EmployeeController::class);
             Route::resource('kpis', Hris\KpiController::class);
             Route::resource('leaves', Hris\LeaveController::class);
-            Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
-            Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
+        Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
+        Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
+        Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');
 
             // Master Setup Dashboard (Sex, Address Hierarchy, Board, Institution, Leave Reasons, Salary Relations, Leave Balance)
             Route::get('master-setup', [Hris\MasterSetupController::class, 'index'])->name('master.index');
