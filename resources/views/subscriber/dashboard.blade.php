@@ -13,8 +13,8 @@
     }
     .btn-check:checked + .billing-card {
         border-color: var(--color-primary) !important;
-        background-color: rgba(95, 90, 246, 0.04) !important;
-        box-shadow: 0 0 0 1px var(--color-primary), 0 4px 12px rgba(95, 90, 246, 0.08) !important;
+        background: linear-gradient(135deg, rgba(95, 90, 246, 0.06), rgba(95, 90, 246, 0.02)) !important;
+        box-shadow: 0 0 0 2px var(--color-primary), 0 8px 20px rgba(95, 90, 246, 0.1) !important;
     }
     .btn-check:checked + .billing-card .bx-calendar-event {
         color: var(--color-primary) !important;
@@ -32,13 +32,14 @@
         color: var(--color-primary) !important;
     }
     .stat-card {
-        border: 1px solid rgba(226, 232, 240, 0.7) !important;
-        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.6) !important;
+        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
     }
     .stat-icon {
         width: 48px;
         height: 48px;
-        border-radius: 12px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -68,7 +69,7 @@
                     <i class="bx bx-broadcast me-2 text-primary font-size-20 align-middle"></i> Dedicated ZKTeco Machine ADMS Endpoint
                 </h6>
                 <p class="mb-3 text-slate-600 font-size-13">Configure this unique URL on your ZKTeco biometric machine's <strong>COMM. &gt; ADMS Cloud Server</strong> settings:</p>
-                
+
                 <div class="input-group" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
                     <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-link"></i></span>
                     <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="http://amds.test/iclock/{{ $tenant->tenant_token }}/cdata" readonly>
@@ -102,7 +103,7 @@
             <!-- Left Side: Subscriber & Active Subscription Details -->
             <div class="col-lg-6 border-end pe-lg-4">
                 <h6 class="text-uppercase text-muted font-size-11 tracking-wider fw-bold mb-3.5">Account Details</h6>
-                
+
                 <div class="d-flex align-items-center gap-3 mb-4">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode($tenant->name) }}&background=5f5af6&color=fff" class="rounded-4 border" width="56" height="56" alt="Org Logo">
                     <div>
@@ -125,7 +126,7 @@
                 </div>
 
                 <h6 class="text-uppercase text-muted font-size-11 tracking-wider fw-bold mb-3">Subscription Details</h6>
-                
+
                 <div class="row g-3 mb-3">
                     <div class="col-6">
                         <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-3">
@@ -152,17 +153,17 @@
             <!-- Right Side: Upgrade / Renewal Server Package Purchase Form -->
             <div class="col-lg-6 ps-lg-4">
                 <h6 class="text-uppercase text-primary font-size-11 tracking-wider fw-bold mb-3.5"><i class="bx bx-shopping-bag me-1"></i> Buy / Upgrade Subscription Plan</h6>
-                
+
                 <form action="{{ route('subscriber.checkout') }}" method="POST" id="formSubCheckout">
                     @csrf
-                    
+
                     <div class="mb-4">
                         <label class="form-label fw-bold text-slate-700 font-size-12 tracking-wide uppercase">Select Server Package Plan</label>
                         <select name="plan_id" id="selectPackagePlan" class="form-select border-secondary" required style="border: 2px solid #e2e8f0 !important; border-radius: 10px;">
                             @foreach($plans as $plan)
-                                <option value="{{ $plan->id }}" 
-                                        data-monthly="{{ $plan->price_monthly }}" 
-                                        data-yearly="{{ $plan->price_yearly }}" 
+                                <option value="{{ $plan->id }}"
+                                        data-monthly="{{ $plan->price_monthly }}"
+                                        data-yearly="{{ $plan->price_yearly }}"
                                         data-devices="{{ $plan->max_devices }}"
                                         {{ ($currentPlan->id ?? null) == $plan->id ? 'selected' : '' }}>
                                     {{ $plan->name }} (Up to {{ $plan->max_devices }} ZKTeco Devices)
@@ -321,16 +322,16 @@
     function copyAdmsUrl() {
         const copyText = document.getElementById("adms-url");
         navigator.clipboard.writeText(copyText.value);
-        
+
         const copyBtn = document.getElementById("copy-btn");
         const copyIcon = document.getElementById("copy-icon");
         const copyTextSpan = document.getElementById("copy-text");
-        
+
         copyBtn.classList.remove("btn-primary");
         copyBtn.classList.add("btn-success");
         copyIcon.className = "bx bx-check me-1";
         copyTextSpan.textContent = "Copied URL";
-        
+
         setTimeout(() => {
             copyBtn.classList.remove("btn-success");
             copyBtn.classList.add("btn-primary");
@@ -350,7 +351,7 @@
             if (!selectPlan) return;
             const selectedOption = selectPlan.options[selectPlan.selectedIndex];
             const isYearly = radioYearly.checked;
-            
+
             const monthlyPrice = parseFloat(selectedOption.getAttribute('data-monthly') || 0);
             const yearlyPrice = parseFloat(selectedOption.getAttribute('data-yearly') || 0);
             const devices = selectedOption.getAttribute('data-devices') || 2;
@@ -392,7 +393,7 @@
                         } else if (log.status_label === 'Check Out') {
                             statusBadge = 'bg-soft-danger text-danger';
                         }
-                        
+
                         punchFeed.innerHTML += `
                             <tr>
                                 <td><span class="fw-bold text-primary">${log.pin}</span></td>

@@ -17,18 +17,18 @@
 </head>
 <body>
 
-    <!-- Dedicated Subscriber Sidebar (Carbon Theme) -->
-    <div id="vertical-menu" style="border-right: 1px solid rgba(255, 255, 255, 0.04) !important;">
-        <div class="navbar-brand-box" style="border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;">
+    <!-- Subscriber Sidebar -->
+    <div id="vertical-menu">
+        <div class="navbar-brand-box">
             <a href="{{ route('subscriber.dashboard') }}" class="brand-logo">
-                <i class="bx bx-shield-quarter text-emerald-400 font-size-22"></i>
+                <i class="bx bx-shield-quarter"></i>
                 <span style="font-family: 'Poppins', sans-serif; font-size: 1rem; letter-spacing: 1.5px; font-weight: 700; color: #ffffff;">ADMS PORTAL</span>
             </a>
         </div>
 
         <ul class="sidebar-menu">
-            <li class="menu-title text-slate-500 font-size-10 font-weight-700 tracking-wider">ADMS Management</li>
-            
+            <li class="menu-title">ADMS Management</li>
+
             <li class="{{ request()->routeIs('subscriber.dashboard') ? 'active' : '' }}">
                 <a href="{{ route('subscriber.dashboard') }}">
                     <i class="bx bx-grid-alt"></i>
@@ -57,7 +57,7 @@
                 </a>
             </li>
 
-            <li class="menu-title text-slate-500 font-size-10 font-weight-700 tracking-wider">Integration</li>
+            <li class="menu-title">Integration</li>
 
             <li class="{{ request()->routeIs('subscriber.webhook.*') ? 'active' : '' }}">
                 <a href="{{ route('subscriber.webhook.index') }}">
@@ -80,8 +80,8 @@
                 </a>
             </li>
 
-            <li class="menu-title text-slate-500 font-size-10 font-weight-700 tracking-wider">HR Modules</li>
-            
+            <li class="menu-title">HR Modules</li>
+
             <!-- Setup Submenu -->
             <li>
                 <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
@@ -209,7 +209,7 @@
                 </ul>
             </li>
 
-            <li class="menu-title text-slate-500 font-size-10 font-weight-700 tracking-wider">Payroll Module</li>
+            <li class="menu-title">Payroll Module</li>
             <li>
                 <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
                     <i class="bx bx-money text-slate-500"></i>
@@ -227,13 +227,13 @@
         </ul>
     </div>
 
-    <!-- Top Navigation (Glass panel) -->
+    <!-- Top Navigation -->
     <header id="page-topbar">
         <div class="d-flex align-items-center gap-2.5">
-            <button type="button" class="btn btn-sm px-2 font-size-18 header-item waves-effect border-0" id="sidebar-toggle" style="min-height: auto; height: 38px; width: 38px; border-radius: 50% !important; background: rgba(95, 90, 246, 0.05);">
+            <button type="button" class="btn btn-sm px-2 font-size-18 header-item waves-effect border-0" id="sidebar-toggle">
                 <i class="bx bx-menu-alt-left text-primary" style="font-size: 1.4rem;"></i>
             </button>
-            <span class="badge bg-primary px-3 py-2 font-size-11 rounded-pill" style="border: 1px solid rgba(95, 90, 246, 0.15) !important;">
+            <span class="badge bg-primary px-3 py-2 font-size-11 rounded-pill d-none d-sm-inline-flex">
                 <i class="bx bx-building-house me-1 align-middle"></i> {{ auth()->user()->tenant->name ?? 'Organization' }}
             </span>
         </div>
@@ -284,7 +284,7 @@
             @yield('content')
         </div>
 
-        <!-- Tiny Footer -->
+        <!-- Footer -->
         <footer class="footer mt-5 py-3 border-top text-slate-500 text-xs bg-white border-slate-100" style="border-radius: 12px; margin-top: 3rem !important;">
             <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
