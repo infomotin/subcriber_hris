@@ -73,6 +73,16 @@ class EmployeeProfile extends Model
         return $this->belongsTo(WorkShift::class, 'shift_id');
     }
 
+    public function promotions(): HasMany
+    {
+        return $this->hasMany(EmployeePromotion::class, 'employee_profile_id');
+    }
+
+    public function increments(): HasMany
+    {
+        return $this->hasMany(Increment::class, 'employee_profile_id');
+    }
+
     public function bankInfo(): HasOne
     {
         return $this->hasOne(BankInformation::class, 'employee_profile_id');

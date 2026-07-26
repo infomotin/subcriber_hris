@@ -84,14 +84,14 @@
 
             <!-- Setup Submenu -->
             <li>
-                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
+                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
                         <i class="bx bx-cog"></i>
                         <span>Setup</span>
                     </div>
                     <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'addresses', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
                     <li class="{{ request()->routeIs('subscriber.hris.master.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.master.index') }}" class="font-size-13 py-2 text-primary fw-medium">
                             <i class="bx bx-slider-alt me-2 text-primary font-size-15"></i> Master Setup
@@ -127,19 +127,24 @@
                             <i class="bx bx-dots-horizontal-rounded me-2"></i> Other Setup
                         </a>
                     </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.increment-rules.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.increment-rules.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-rule me-2"></i> Increment Rules
+                        </a>
+                    </li>
                 </ul>
             </li>
 
             <!-- Databases Submenu -->
             <li>
-                <a href="#databasesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? '' : 'collapsed' }}">
+                <a href="#databasesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
                         <i class="bx bx-data"></i>
                         <span>Databases</span>
                     </div>
                     <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? 'show' : '' }}" id="databasesSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.employees.*', 'subscriber.hris.kpis.*', 'subscriber.hris.promotions.*', 'subscriber.hris.increments.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['verification', 'increments'])) ? 'show' : '' }}" id="databasesSubmenu">
                     <li class="{{ request()->routeIs('subscriber.hris.employees.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.employees.index') }}" class="font-size-13 py-2">
                             <i class="bx bx-user-plus me-2"></i> Employee Entry
@@ -150,9 +155,14 @@
                             <i class="bx bx-shield-quarter me-2"></i> Data Verification
                         </a>
                     </li>
-                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'increments' ? 'active' : '' }}">
-                        <a href="{{ route('subscriber.hris.general.show', 'increments') }}" class="font-size-13 py-2">
+                    <li class="{{ request()->routeIs('subscriber.hris.increments.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.increments.index') }}" class="font-size-13 py-2">
                             <i class="bx bx-trending-up me-2"></i> Increments
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.hris.promotions.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.promotions.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-trending-up me-2"></i> Promotions
                         </a>
                     </li>
                     <li class="{{ request()->routeIs('subscriber.hris.kpis.*') ? 'active' : '' }}">

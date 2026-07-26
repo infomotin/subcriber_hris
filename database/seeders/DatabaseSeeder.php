@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
             SaasSeeder::class,
             HrisSetupSeeder::class,
             HrisEmployeeSeeder::class,
+            HrisMoreEmployeeSeeder::class,
+            IncrementRuleSeeder::class,
+            IncrementSeeder::class,
         ]);
     }
 }

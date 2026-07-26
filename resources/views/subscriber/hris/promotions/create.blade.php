@@ -50,7 +50,7 @@
             </h5>
             <div class="row g-2 mb-4">
                 <div class="col-lg-5">
-                    <input type="text" class="form-control rounded-pill px-4" id="search_employee_id" placeholder="Enter Employee ID (e.g. EMP-1001)" style="height: 42px;">
+                    <input type="text" class="form-control rounded-pill px-4" id="search_employee_id" placeholder="Search by Employee ID or Name..." style="height: 42px;">
                 </div>
                 <div class="col-lg-2">
                     <button type="button" class="btn btn-primary rounded-pill w-100" id="searchBtn" style="height: 42px; font-size: 0.85rem;">
@@ -147,7 +147,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     document.getElementById('employeeResult').style.display = 'none';
     document.getElementById('employeeNotFound').style.display = 'none';
 
-    fetch('{{ route("subscriber.hris.promotions.employee-search") }}?employee_id=' + encodeURIComponent(empId))
+    fetch('{{ route("subscriber.hris.promotions.employee-search") }}?q=' + encodeURIComponent(empId))
         .then(res => res.json())
         .then(data => {
             if (data.found) {

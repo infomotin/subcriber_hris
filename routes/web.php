@@ -163,8 +163,15 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('employees', Hris\EmployeeController::class);
             Route::resource('kpis', Hris\KpiController::class);
             Route::resource('leaves', Hris\LeaveController::class);
-            Route::resource('promotions', Hris\PromotionController::class)->except(['edit', 'update', 'destroy']);
             Route::get('promotions/employee-search', [Hris\PromotionController::class, 'getEmployee'])->name('promotions.employee-search');
+            Route::resource('promotions', Hris\PromotionController::class)->except(['edit', 'update', 'destroy']);
+            Route::resource('increment-rules', Hris\IncrementRuleController::class);
+            Route::get('increments/employee-search', [Hris\IncrementController::class, 'getEmployee'])->name('increments.employee-search');
+            Route::get('increments/check-eligibility', [Hris\IncrementController::class, 'checkEligibility'])->name('increments.check-eligibility');
+            Route::get('increments/enforce', [Hris\IncrementController::class, 'enforce'])->name('increments.enforce');
+            Route::post('increments/do-enforce', [Hris\IncrementController::class, 'doEnforce'])->name('increments.do-enforce');
+            Route::get('increments/{increment}/letter', [Hris\IncrementController::class, 'letter'])->name('increments.letter');
+            Route::resource('increments', Hris\IncrementController::class)->except(['edit', 'update', 'destroy', 'show']);
         Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
         Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
         Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');

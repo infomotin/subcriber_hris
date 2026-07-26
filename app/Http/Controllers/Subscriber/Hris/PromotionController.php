@@ -102,8 +102,16 @@ class PromotionController extends Controller
 
     public function getEmployee(Request $request)
     {
+        $search = trim($request->get('q') ?? $request->get('employee_id'));
+
+        if (empty($search)) {
+            return response()->json(['found' => false, 'message' => 'Enter an employee ID or name']);
+        }
+
         $employee = EmployeeProfile::with(['department', 'designation', 'user'])
-            ->where('employee_id', $request->get('employee_id'))
+            ->where('employee_id', $search)
+            ->orWhere('employee_id', 'like', "%{$search}%")
+            ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->first();
 
         if (!$employee) {
