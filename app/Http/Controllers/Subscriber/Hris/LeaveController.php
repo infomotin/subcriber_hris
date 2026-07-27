@@ -7,8 +7,10 @@ use App\Models\LeaveApplication;
 use App\Models\LeaveType;
 use App\Models\LeaveBalance;
 use App\Models\EmployeeProfile;
+use App\Models\LeaveReason;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LeaveController extends Controller
 {
@@ -34,9 +36,59 @@ class LeaveController extends Controller
 
     public function apply()
     {
-        $employees = EmployeeProfile::with('user')->get();
+        $employees = EmployeeProfile::with(['user', 'department', 'designation', 'images'])->get();
         $leaveTypes = LeaveType::orderBy('name')->get();
-        return view('subscriber.hris.leaves.apply', compact('employees', 'leaveTypes'));
+        $leaveReasons = LeaveReason::orderBy('reason')->get();
+        return view('subscriber.hris.leaves.apply', compact('employees', 'leaveTypes', 'leaveReasons'));
+    }
+
+    public function getEmployeeInfo(Request $request)
+    {
+        $emp = EmployeeProfile::with(['user', 'department', 'designation', 'images'])
+            ->find($request->get('employee_profile_id'));
+        if (!$emp) return response()->json(null);
+
+        $photo = $emp->images()->where('type', 'profile_photo')->first();
+        return response()->json([
+            'id' => $emp->id,
+            'employee_id' => $emp->employee_id,
+            'name' => $emp->user?->name,
+            'email' => $emp->user?->email,
+            'phone' => $emp->phone_number,
+            'department' => $emp->department?->name,
+            'designation' => $emp->designation?->name,
+            'joining_date' => $emp->joining_date,
+            'gender' => $emp->gender,
+            'blood_group' => $emp->blood_group,
+            'status' => $emp->status,
+            'photo_url' => $photo ? asset('storage/' . $photo->file_path) : null,
+        ]);
+    }
+
+    public function getLeaveHistory(Request $request)
+    {
+        $empId = $request->get('employee_profile_id');
+        if (!$empId) return response()->json([]);
+
+        $leaves = LeaveApplication::with('leaveType')
+            ->where('employee_profile_id', $empId)
+            ->whereYear('created_at', now()->year)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return response()->json($leaves);
+    }
+
+    public function downloadPdf(LeaveApplication $leave)
+    {
+        $leave->load(['employee.user', 'employee.department', 'employee.designation', 'employee.tenant', 'leaveType', 'actionedBy']);
+        $companyName = $leave->employee?->tenant?->name ?? 'Organization';
+
+        $pdf = Pdf::loadView('subscriber.hris.leaves.pdf', compact('leave', 'companyName'))
+            ->setPaper('a4');
+
+        $fileName = 'leave-application-' . $leave->id . '.pdf';
+        return $pdf->download($fileName);
     }
 
     public function getBalance(Request $request)

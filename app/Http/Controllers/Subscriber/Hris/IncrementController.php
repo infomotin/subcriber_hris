@@ -45,7 +45,23 @@ class IncrementController extends Controller
         $rules = IncrementRule::where('is_active', true)->orderBy('name')->get();
         $types = Increment::TYPES;
 
-        return view('subscriber.hris.increments.create', compact('departments', 'designations', 'rules', 'types'));
+        $employees = EmployeeProfile::with(['user', 'department', 'designation', 'salaryStructure'])
+            ->get()
+            ->map(fn($e) => [
+                'id' => $e->id,
+                'name' => $e->user?->name ?? 'N/A',
+                'emp_id' => $e->employee_id,
+                'department' => $e->department?->name ?? 'N/A',
+                'designation' => $e->designation?->title ?? 'N/A',
+                'joining_date' => $e->joining_date,
+                'status' => $e->status,
+                'basic' => $e->salaryStructure?->basic_salary ?? 0,
+                'gross' => $e->salaryStructure
+                    ? ($e->salaryStructure->basic_salary + $e->salaryStructure->house_rent + $e->salaryStructure->medical_allowance + $e->salaryStructure->conveyance_allowance + ($e->salaryStructure->other_allowances ?? 0))
+                    : 0,
+            ]);
+
+        return view('subscriber.hris.increments.create', compact('departments', 'designations', 'rules', 'types', 'employees'));
     }
 
     public function store(Request $request)

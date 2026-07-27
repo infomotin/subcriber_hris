@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Multitenantable;
+use App\Models\EmployeeProfile;
 
 class Department extends Model
 {
@@ -31,5 +32,10 @@ class Department extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Department::class, 'parent_id');
+    }
+
+    public function employees(): HasMany
+    {
+        return $this->hasMany(EmployeeProfile::class);
     }
 }

@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             IncrementSeeder::class,
             PromotionSeeder::class,
             LeaveSeeder::class,
+            MovementTypeSeeder::class,
+            BillTypeSeeder::class,
+            PermissionSeeder::class,
+            AdvanceTypeSeeder::class,
         ]);
     }
 }

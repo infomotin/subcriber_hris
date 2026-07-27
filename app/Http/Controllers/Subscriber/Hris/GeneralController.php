@@ -39,23 +39,6 @@ class GeneralController extends Controller
                     'headers' => ['Year', 'Occasion', 'Date', 'Type']
                 ];
                 break;
-            case 'addresses':
-                $config = [
-                    'title' => 'Geographic Address Settings',
-                    'subtitle' => 'Configure locations, zipcodes, and corporate headquarters addresses',
-                    'fields' => [
-                        ['name' => 'location_name', 'label' => 'Location Office Name', 'type' => 'text', 'placeholder' => 'e.g. Dhaka HQ / Chittagong Branch'],
-                        ['name' => 'city', 'label' => 'City', 'type' => 'text', 'placeholder' => 'Dhaka'],
-                        ['name' => 'zip', 'label' => 'Zip Code', 'type' => 'text', 'placeholder' => '1212'],
-                        ['name' => 'country', 'label' => 'Country', 'type' => 'text', 'placeholder' => 'Bangladesh']
-                    ],
-                    'dummy_data' => [
-                        ['id' => 1, 'col1' => 'Dhaka Headquarters', 'col2' => 'Dhaka', 'col3' => '1212', 'col4' => 'Bangladesh'],
-                        ['id' => 2, 'col1' => 'Chittagong Distribution Hub', 'col2' => 'Chittagong', 'col3' => '4000', 'col4' => 'Bangladesh']
-                    ],
-                    'headers' => ['Office Location', 'City', 'Zip Code', 'Country']
-                ];
-                break;
             case 'other':
                 $config = [
                     'title' => 'Other Parameters & Configs',
@@ -110,22 +93,6 @@ class GeneralController extends Controller
                         ['id' => 2, 'col1' => 'EMP-1005', 'col2' => '2,500.00 BDT', 'col3' => 'Promotion adjustment', 'col4' => 'Apr 15, 2026']
                     ],
                     'headers' => ['Employee ID', 'Increment Amount', 'Reasoning', 'Effective Date']
-                ];
-                break;
-            case 'applications':
-                $config = [
-                    'title' => 'General General Applications System',
-                    'subtitle' => 'Manage expense reimbursements, equipment requests, and other tools',
-                    'fields' => [
-                        ['name' => 'title', 'label' => 'Application Title', 'type' => 'text', 'placeholder' => 'e.g. Laptop replacement / Petty cash reimbursement'],
-                        ['name' => 'amount', 'label' => 'Associated Cost (if applicable)', 'type' => 'number', 'placeholder' => '0'],
-                        ['name' => 'date', 'label' => 'Application Date', 'type' => 'date']
-                    ],
-                    'dummy_data' => [
-                        ['id' => 1, 'col1' => 'Petty Cash Requisition', 'col2' => '1,500.00 BDT', 'col3' => 'Office stationeries purchase', 'col4' => 'Approved & Disbursed'],
-                        ['id' => 2, 'col1' => 'Travel Expense Claim', 'col2' => '4,200.00 BDT', 'col3' => 'Biometric device installation onsite', 'col4' => 'Pending manager approval']
-                    ],
-                    'headers' => ['Application Detail', 'Cost Estimate', 'Remarks', 'Status']
                 ];
                 break;
             case 'advances':

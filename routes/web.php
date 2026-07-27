@@ -130,6 +130,7 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::prefix('subscriber')->name('subscriber.')->group(function () {
         Route::get('/', [SubscriberDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard', [SubscriberDashboardController::class, 'index']);
+        Route::get('/hr-dashboard', [SubscriberDashboardController::class, 'hrDashboard'])->name('hr-dashboard');
 
         // Subscriber Dedicated Scoped Views & Device Store
         Route::get('/devices', [SubscriberDeviceController::class, 'index'])->name('devices.index');
@@ -151,6 +152,14 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         Route::get('/attendance/live', [SubscriberAttendanceController::class, 'live'])->name('attendance.live');
         Route::get('/dashboard/stats', [SubscriberDashboardController::class, 'stats'])->name('dashboard.stats');
 
+        // ADMS Management Sub-Pages
+        Route::get('/adms/overview', [SubscriberDashboardController::class, 'admsOverview'])->name('adms.overview');
+        Route::get('/adms/endpoint', [SubscriberDashboardController::class, 'admsEndpoint'])->name('adms.endpoint');
+        Route::get('/adms/punch-logs', [SubscriberDashboardController::class, 'admsPunchLogs'])->name('adms.punch-logs');
+
+        // Subscription & Account Overview
+        Route::get('/subscription', [SubscriberDashboardController::class, 'subscriptionOverview'])->name('subscription.overview');
+
         // Plans & Checkout
         Route::get('/plans', [SubscriptionCheckoutController::class, 'plans'])->name('plans');
         Route::post('/checkout', [SubscriptionCheckoutController::class, 'checkout'])->name('checkout');
@@ -164,9 +173,28 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('kpis', Hris\KpiController::class);
             Route::get('leaves/apply', [Hris\LeaveController::class, 'apply'])->name('leaves.apply');
             Route::get('leaves/balance', [Hris\LeaveController::class, 'getBalance'])->name('leaves.balance');
+            Route::get('leaves/employee-info', [Hris\LeaveController::class, 'getEmployeeInfo'])->name('leaves.employee-info');
+            Route::get('leaves/history', [Hris\LeaveController::class, 'getLeaveHistory'])->name('leaves.history');
+            Route::get('leaves/{leave}/pdf', [Hris\LeaveController::class, 'downloadPdf'])->name('leaves.pdf');
             Route::post('leaves/{leave}/approve', [Hris\LeaveController::class, 'approve'])->name('leaves.approve');
             Route::post('leaves/{leave}/reject', [Hris\LeaveController::class, 'reject'])->name('leaves.reject');
             Route::resource('leaves', Hris\LeaveController::class);
+
+            // Movement Types Setup
+            Route::get('movement-types/limits', [Hris\MovementTypeController::class, 'limits'])->name('movement-types.limits');
+            Route::post('movement-types/limits', [Hris\MovementTypeController::class, 'storeLimit'])->name('movement-types.limits.store');
+            Route::delete('movement-types/limits/{limit}', [Hris\MovementTypeController::class, 'destroyLimit'])->name('movement-types.limits.destroy');
+            Route::resource('movement-types', Hris\MovementTypeController::class)->except(['show']);
+
+            // Movement Passes
+            Route::get('movement-passes/apply', [Hris\MovementPassController::class, 'apply'])->name('movement-passes.apply');
+            Route::get('movement-passes/employee-info', [Hris\MovementPassController::class, 'getEmployeeInfo'])->name('movement-passes.employee-info');
+            Route::get('movement-passes/monthly-usage', [Hris\MovementPassController::class, 'getMonthlyUsage'])->name('movement-passes.monthly-usage');
+            Route::get('movement-passes/history', [Hris\MovementPassController::class, 'getPassHistory'])->name('movement-passes.history');
+            Route::post('movement-passes/{pass}/approve', [Hris\MovementPassController::class, 'approve'])->name('movement-passes.approve');
+            Route::post('movement-passes/{pass}/reject', [Hris\MovementPassController::class, 'reject'])->name('movement-passes.reject');
+            Route::resource('movement-passes', Hris\MovementPassController::class)->except(['edit', 'update', 'show']);
+
             Route::get('promotions/employee-search', [Hris\PromotionController::class, 'getEmployee'])->name('promotions.employee-search');
             Route::resource('promotions', Hris\PromotionController::class)->except(['edit', 'update', 'destroy']);
             Route::resource('increment-rules', Hris\IncrementRuleController::class);
@@ -179,6 +207,58 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
         Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
         Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');
+
+            // Bill Types Setup
+            Route::resource('bill-types', Hris\BillTypeController::class)->except(['show']);
+
+            // Bill Purposes Setup
+            Route::resource('bill-purposes', Hris\BillPurposeController::class)->except(['show']);
+
+            // Bills (Expense Applications)
+            Route::get('bills/apply', [Hris\BillController::class, 'apply'])->name('bills.apply');
+            Route::get('bills/employee-info', [Hris\BillController::class, 'employeeInfo'])->name('bills.employee-info');
+            Route::get('bills/approval', [Hris\BillController::class, 'approval'])->name('bills.approval');
+            Route::post('bills/{bill}/approve', [Hris\BillController::class, 'approve'])->name('bills.approve');
+            Route::post('bills/{bill}/reject', [Hris\BillController::class, 'reject'])->name('bills.reject');
+            Route::post('bills/{bill}/modify', [Hris\BillController::class, 'modify'])->name('bills.modify');
+            Route::get('bills/{bill}/pdf', [Hris\BillController::class, 'pdf'])->name('bills.pdf');
+            Route::resource('bills', Hris\BillController::class)->except(['edit', 'update', 'destroy']);
+
+            // Roles & Permissions
+            Route::resource('users', Hris\UserController::class)->except(['show']);
+            Route::resource('roles', Hris\RoleController::class)->except(['show']);
+            Route::get('permissions', [Hris\PermissionController::class, 'index'])->name('permissions.index');
+
+            // Advance Types Setup
+            Route::resource('advance-types', Hris\AdvanceTypeController::class)->except(['show']);
+
+            // Advance Sources Setup
+            Route::resource('advance-sources', Hris\AdvanceSourceController::class)->except(['show']);
+
+            // Salary Advances
+            Route::get('advances/apply', [Hris\AdvanceController::class, 'apply'])->name('advances.apply');
+            Route::get('advances/employee-info', [Hris\AdvanceController::class, 'employeeInfo'])->name('advances.employee-info');
+            Route::get('advances/approval', [Hris\AdvanceController::class, 'approval'])->name('advances.approval');
+            Route::post('advances/{advance}/approve', [Hris\AdvanceController::class, 'approve'])->name('advances.approve');
+            Route::post('advances/{advance}/reject', [Hris\AdvanceController::class, 'reject'])->name('advances.reject');
+            Route::resource('advances', Hris\AdvanceController::class)->except(['edit', 'update', 'destroy']);
+
+            // System Setup
+            Route::get('setup/subscriber', [Hris\SystemSetupController::class, 'subscriberInfo'])->name('setup.subscriber');
+            Route::put('setup/subscriber', [Hris\SystemSetupController::class, 'updateSubscriberInfo'])->name('setup.subscriber.update');
+            Route::get('setup/theme', [Hris\SystemSetupController::class, 'theme'])->name('setup.theme');
+            Route::put('setup/theme', [Hris\SystemSetupController::class, 'updateTheme'])->name('setup.theme.update');
+            Route::get('setup/mail', [Hris\SystemSetupController::class, 'mailConfig'])->name('setup.mail');
+            Route::put('setup/mail', [Hris\SystemSetupController::class, 'updateMailConfig'])->name('setup.mail.update');
+            Route::post('setup/mail/test', [Hris\SystemSetupController::class, 'testMail'])->name('setup.mail.test');
+            Route::get('setup/sms', [Hris\SystemSetupController::class, 'smsConfig'])->name('setup.sms');
+            Route::put('setup/sms', [Hris\SystemSetupController::class, 'updateSmsConfig'])->name('setup.sms.update');
+            Route::post('setup/sms/test', [Hris\SystemSetupController::class, 'testSms'])->name('setup.sms.test');
+            Route::get('setup/backup', [Hris\SystemSetupController::class, 'backup'])->name('setup.backup');
+            Route::post('setup/backup', [Hris\SystemSetupController::class, 'createBackup'])->name('setup.backup.create');
+            Route::get('setup/backup/{filename}/download', [Hris\SystemSetupController::class, 'downloadBackup'])->name('setup.backup.download');
+            Route::post('setup/backup/{filename}/restore', [Hris\SystemSetupController::class, 'restoreBackup'])->name('setup.backup.restore');
+            Route::delete('setup/backup/{filename}', [Hris\SystemSetupController::class, 'deleteBackup'])->name('setup.backup.delete');
 
             // Master Setup Dashboard (Sex, Address Hierarchy, Board, Institution, Leave Reasons, Salary Relations, Leave Balance)
             Route::get('master-setup', [Hris\MasterSetupController::class, 'index'])->name('master.index');

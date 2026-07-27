@@ -84,9 +84,12 @@
                                     </form>
                                 </div>
                             @else
-                                <span class="font-size-11 text-muted">
-                                    by {{ $leave->actionedBy?->name ?? 'System' }}
-                                </span>
+                                <div class="d-flex justify-content-end gap-1 align-items-center">
+                                    <a href="{{ route('subscriber.hris.leaves.pdf', $leave) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 font-size-11" title="Download PDF">
+                                        <i class="bx bx-download me-0.5"></i> PDF
+                                    </a>
+                                    <span class="font-size-11 text-muted">by {{ $leave->actionedBy?->name ?? 'System' }}</span>
+                                </div>
                             @endif
                         </td>
                     </tr>
