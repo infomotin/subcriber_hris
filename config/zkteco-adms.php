@@ -10,7 +10,7 @@ return [
     'server_ip' => env('ADMS_SERVER_IP', '0.0.0.0'),
     'server_port' => env('ADMS_SERVER_PORT', 8000),
 
-    'heartbeat_timeout' => env('ADMS_HEARTBEAT_TIMEOUT', 120), // seconds
+    'heartbeat_timeout' => env('ADMS_HEARTBEAT_TIMEOUT', 300), // seconds (5 minutes)
 
     'response' => [
         'error_delay' => env('ADMS_RESPONSE_ERROR_DELAY', 60),
