@@ -62,24 +62,27 @@
                         <strong class="font-size-13 text-primary">{{ $tenant->tenant_token }}</strong>
                     </div>
 
-                    <div class="input-group" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                    <div class="input-group mb-2" style="max-width: 620px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
                         <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-link"></i></span>
-                        <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="{{ request()->getSchemeAndHttpHost() }}/iclock/{{ $tenant->tenant_token }}/cdata" readonly>
+                        <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="https://hr.nexogiant.com/iclock/{{ $tenant->tenant_token }}/cdata" readonly>
                         <button class="btn btn-primary px-4 fw-bold font-size-13" type="button" id="copy-btn" onclick="copyAdmsUrl()">
                             <i class="bx bx-copy me-1" id="copy-icon"></i> <span id="copy-text">Copy URL</span>
                         </button>
                     </div>
 
                     <div class="mt-2 d-flex align-items-center gap-3 font-size-12 text-slate-500">
-                        <label class="d-flex align-items-center gap-1">
-                            <input type="radio" name="protocol" value="http" onchange="updateUrl()" {{ request()->isSecure() ? '' : 'checked' }}>
-                            HTTP
-                        </label>
-                        <label class="d-flex align-items-center gap-1">
-                            <input type="radio" name="protocol" value="https" onchange="updateUrl()" {{ request()->isSecure() ? 'checked' : '' }}>
-                            HTTPS
-                        </label>
-                        <span class="text-muted">| Port: <code>80</code> / <code>443</code></span>
+                        <span class="badge bg-success font-size-10 rounded-pill px-2 py-1"><i class="bx bx-lock me-1"></i> HTTPS (Port 443) &mdash; Required</span>
+                        <span class="text-muted">HTTP (Port 80) is not available — Cloudflare enforces HTTPS.</span>
+                    </div>
+
+                    <div class="mt-3 p-3 rounded-3" style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15);">
+                        <span class="fw-bold font-size-12 text-primary"><i class="bx bx-server me-1"></i> Device Configuration Summary:</span>
+                        <div class="mt-2 font-size-12 text-slate-600" style="line-height: 2;">
+                            <div><strong>Server Address:</strong> <code>hr.nexogiant.com</code></div>
+                            <div><strong>Port:</strong> <code>443</code></div>
+                            <div><strong>Protocol:</strong> <code>HTTPS</code> (enable SSL/TLS on device)</div>
+                            <div><strong>Token:</strong> <code>{{ $tenant->tenant_token }}</code></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,8 +103,8 @@
                         Uses standard tab-delimited push with <code>table=ATTLOG</code> / <code>table=OPERLOG</code>.
                     </p>
 
-                    <div class="mb-3 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-                        <span class="fw-bold font-size-12 text-green-700"><i class="bx bx-key me-1"></i> Your Tenant Token:</span>
+                    <div class="mb-3 p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
+                        <span class="fw-bold font-size-12 text-amber-700"><i class="bx bx-key me-1"></i> Your Tenant Token:</span>
                         <div class="input-group mt-1" style="max-width: 580px;">
                             <input type="text" class="form-control font-size-13 bg-white fw-bold text-slate-800 py-2" value="{{ $tenant->tenant_token }}" readonly>
                             <button class="btn btn-success px-3 fw-bold font-size-13" type="button" onclick="navigator.clipboard.writeText('{{ $tenant->tenant_token }}')">
@@ -115,25 +118,23 @@
                     </div>
 
                     <div class="mb-3 p-3 rounded-3" style="background: rgba(255,255,255,0.7); border: 1px solid rgba(245, 158, 11, 0.15);">
-                        <span class="fw-bold font-size-12 text-slate-700">Server IP Address:</span>
-                        <div class="input-group mt-1" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
-                            <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-server"></i></span>
-                            <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-bold text-slate-800 py-2" id="legacy-ip" value="{{ $serverIp }}" readonly>
-                            <button class="btn btn-warning px-3 fw-bold font-size-13" type="button" onclick="copyLegacyIp()">
-                                <i class="bx bx-copy me-1"></i> Copy IP
-                            </button>
+                        <span class="fw-bold font-size-12 text-slate-700">Device Configuration:</span>
+                        <div class="mt-2 font-size-12 text-slate-600" style="line-height: 2;">
+                            <div><strong>Server Address:</strong> <code>hr.nexogiant.com</code></div>
+                            <div><strong>Port:</strong> <code>443</code></div>
+                            <div><strong>Protocol:</strong> <code>HTTPS</code> (enable SSL/TLS on device)</div>
                         </div>
-                        <div class="mt-2 font-size-12 text-muted">
-                            Configure on your ZKTeco device: <strong>Server IP</strong> = <code>{{ $serverIp }}</code>, <strong>Port</strong> = <code>80</code>
+                        <div class="mt-2 font-size-11 text-amber-700">
+                            <i class="bx bx-error-circle me-1"></i> Direct IP connections (<code>15.235.229.40</code>) are not supported — the server requires domain-based HTTPS connections.
                         </div>
                     </div>
 
                     <div class="mb-3 p-3 rounded-3" style="background: rgba(255,255,255,0.7); border: 1px solid rgba(245, 158, 11, 0.15);">
-                        <span class="fw-bold font-size-12 text-slate-700">ADMS URL (for reference / newer firmware):</span>
-                        <div class="input-group mt-1" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                        <span class="fw-bold font-size-12 text-slate-700">ADMS URL (full reference):</span>
+                        <div class="input-group mt-1" style="max-width: 620px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
                             <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-link"></i></span>
-                            <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="legacy-url" value="http://{{ $serverHost }}/iclock/cdata" readonly>
-                            <button class="btn btn-warning px-3 fw-bold font-size-13" type="button" onclick="copyLegacyUrl()">
+                            <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" value="https://hr.nexogiant.com/iclock/cdata" readonly>
+                            <button class="btn btn-warning px-3 fw-bold font-size-13" type="button" onclick="navigator.clipboard.writeText('https://hr.nexogiant.com/iclock/cdata')">
                                 <i class="bx bx-copy me-1"></i> Copy URL
                             </button>
                         </div>
@@ -144,7 +145,7 @@
                             <div>
                                 <span class="fw-bold font-size-12 text-green-700"><i class="bx bx-check-circle me-1 text-green-500"></i> Endpoint Status</span>
                                 <p class="font-size-12 text-muted mb-0 mt-1">
-                                    <code>http://{{ $serverHost }}/iclock/cdata</code> responds to device handshake and attendance pushes.
+                                    <code>https://hr.nexogiant.com/iclock/cdata</code> responds to device handshake and attendance pushes.
                                     Serial-number-based tenant resolution is active.
                                 </p>
                             </div>
@@ -165,6 +166,24 @@
 </div>
 
 <div class="card border-0 mt-4">
+    <div class="card-body p-4" style="background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1px solid #fecaca !important;">
+        <h6 class="fw-bold text-red-700 mb-3"><i class="bx bx-error-circle me-1"></i> Important: HTTPS Required</h6>
+        <p class="font-size-13 text-red-600 mb-3">
+            This server is behind <strong>Cloudflare CDN</strong> which enforces HTTPS. All ADMS communication <strong>must use HTTPS</strong>.
+        </p>
+        <ul class="font-size-13 text-red-600 mb-3" style="line-height: 2;">
+            <li><strong>Direct IP (http://15.235.229.40)</strong> &mdash; does NOT work. cPanel intercepts requests by IP.</li>
+            <li><strong>HTTP Domain (http://hr.nexogiant.com)</strong> &mdash; Cloudflare redirects to HTTPS automatically.</li>
+            <li><strong>HTTPS Domain (https://hr.nexogiant.com)</strong> &mdash; Works correctly. <strong>Use this.</strong></li>
+        </ul>
+        <p class="font-size-13 text-red-600 mb-0">
+            <strong>On your ZKTeco device:</strong> Set the server to <code>hr.nexogiant.com</code>, Port <code>443</code>, and enable <strong>HTTPS/SSL</strong> if available.
+            If your device firmware does not support HTTPS, it cannot connect to this server.
+        </p>
+    </div>
+</div>
+
+<div class="card border-0 mt-4">
     <div class="card-body p-4">
         <h6 class="fw-bold text-slate-800 mb-3"><i class="bx bx-info-circle text-primary me-1"></i> Configuration Guide</h6>
 
@@ -173,23 +192,27 @@
             <ol class="font-size-13 text-slate-600 mb-0" style="line-height: 2;">
                 <li>On your ZKTeco biometric device, press <strong>MENU</strong> and log in as admin.</li>
                 <li>Navigate to <strong>COMM. &gt; ADMS Cloud Server</strong> or <strong>Network &gt; ADMS</strong>.</li>
-                <li>Set the <strong>Server URL</strong> to the domain-based endpoint shown above.</li>
-                <li>Set the <strong>Port</strong> to <code>80</code> (HTTP) or <code>443</code> (HTTPS).</li>
+                <li>Set the <strong>Server URL</strong> or <strong>Server Address</strong> to <code>hr.nexogiant.com</code>.</li>
+                <li>Set the <strong>Port</strong> to <code>443</code>.</li>
+                <li><strong>Enable HTTPS/SSL</strong> if the option is available.</li>
                 <li>Ensure the device has internet connectivity (DNS resolution required) and save.</li>
                 <li>The device will handshake and start pushing attendance logs automatically.</li>
             </ol>
         </div>
 
         <div id="oldProtocolGuide" style="display:none;">
-            <p class="font-size-13 text-slate-600 mb-3">For <strong>older devices</strong> that only accept an IP address with the legacy protocol:</p>
+            <p class="font-size-13 text-slate-600 mb-3">For <strong>older devices</strong> with the legacy protocol:</p>
             <ol class="font-size-13 text-slate-600 mb-0" style="line-height: 2;">
                 <li>On your ZKTeco biometric device, press <strong>MENU</strong> and log in as admin.</li>
                 <li>Navigate to <strong>COMM. &gt; ADMS Cloud Server</strong> or <strong>Network &gt; ADMS</strong>.</li>
-                <li>Set the <strong>Server IP</strong> to the IP address shown above (not a domain name).</li>
-                <li>Set the <strong>Port</strong> to <code>80</code> (HTTP). <em>HTTPS is not supported by legacy ZKTeco firmware.</em></li>
+                <li>Set the <strong>Server Address</strong> to <code>hr.nexogiant.com</code> (NOT an IP address).</li>
+                <li>Set the <strong>Port</strong> to <code>443</code> and <strong>enable HTTPS/SSL</strong>.</li>
                 <li>The device will push data using tab-delimited format with <code>table=ATTLOG</code> (attendance) and <code>table=OPERLOG</code> (operation logs).</li>
                 <li>The system automatically identifies your device by its <strong>serial number</strong> during handshake.</li>
             </ol>
+            <div class="mt-3 p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
+                <p class="font-size-12 text-amber-700 mb-0"><strong>Note:</strong> IP-based connections are not supported on this server. All devices must use the domain name <code>hr.nexogiant.com</code> with HTTPS (port 443).</p>
+            </div>
         </div>
     </div>
 </div>
@@ -237,24 +260,10 @@
         document.getElementById('oldProtocolGuide').style.display = type === 'old' ? '' : 'none';
     }
 
-    function updateUrl() {
-        const protocol = document.querySelector('input[name="protocol"]:checked').value;
-        const url = protocol + '://' + baseHost + '/iclock/' + token + '/cdata';
-        document.getElementById('adms-url').value = url;
-    }
-
     function copyAdmsUrl() {
         const copyText = document.getElementById('adms-url');
         navigator.clipboard.writeText(copyText.value);
         showCopied('copy-btn', 'copy-icon', 'copy-text');
-    }
-
-    function copyLegacyIp() {
-        navigator.clipboard.writeText(document.getElementById('legacy-ip').value);
-    }
-
-    function copyLegacyUrl() {
-        navigator.clipboard.writeText(document.getElementById('legacy-url').value);
     }
 
     function showCopied(btnId, iconId, textId) {
