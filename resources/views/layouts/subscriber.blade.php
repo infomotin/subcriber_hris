@@ -318,6 +318,11 @@
                             <i class="bx bx-chevron-down font-size-14"></i>
                         </a>
                         <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.adms.*') ? 'show' : '' }}" id="admsSubmenu">
+                            <li class="{{ request()->routeIs('subscriber.devices.*') ? 'active' : '' }}">
+                                <a href="{{ route('subscriber.devices.index') }}" class="font-size-13 py-2">
+                                    <i class="bx bx-chip me-2"></i> Biometric Machines
+                                </a>
+                            </li>
                             <li class="{{ request()->routeIs('subscriber.adms.overview') ? 'active' : '' }}">
                                 <a href="{{ route('subscriber.adms.overview') }}" class="font-size-13 py-2">
                                     <i class="bx bx-grid-alt me-2"></i> Show Subscriber Dashboard
@@ -333,6 +338,16 @@
                                     <i class="bx bx-time me-2"></i> Realtime Punch Logs Feed
                                 </a>
                             </li>
+                            <li class="{{ request()->routeIs('subscriber.adms.handshake-test') ? 'active' : '' }}">
+                                <a href="{{ route('subscriber.adms.handshake-test') }}" class="font-size-13 py-2">
+                                    <i class="bx bx-test-tube me-2"></i> Handshake & Protocol Test
+                                </a>
+                            </li>
+                            <li class="{{ request()->routeIs('subscriber.adms.listener-config') ? 'active' : '' }}">
+                                <a href="{{ route('subscriber.adms.listener-config') }}" class="font-size-13 py-2">
+                                    <i class="bx bx-server me-2"></i> Listener & Server Config
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
@@ -346,19 +361,127 @@
             </li>
 
             <li class="menu-title">Payroll Module</li>
+
+            <!-- Setup Submenu -->
             <li>
-                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
-                    <i class="bx bx-money text-slate-500"></i>
-                    <span>Salary Sheets</span>
-                    <span class="badge bg-soft-primary text-primary ms-auto font-size-9">Soon</span>
+                <a href="#payrollSetupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.payroll.setup', 'subscriber.payroll.salary-role*') ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-cog"></i>
+                        <span>Setup</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.payroll.setup', 'subscriber.payroll.salary-role*') ? 'show' : '' }}" id="payrollSetupSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.payroll.salary-role*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.salary-role') }}" class="font-size-13 py-2 text-primary fw-medium">
+                            <i class="bx bx-percentage me-2 text-primary font-size-15"></i> Salary Role
+                        </a>
+                    </li>
+                </ul>
             </li>
+
+            <!-- Databases Submenu -->
             <li>
-                <a href="#" class="opacity-60 cursor-not-allowed" onclick="return false;">
-                    <i class="bx bx-receipt text-slate-500"></i>
-                    <span>Generate Payslips</span>
-                    <span class="badge bg-soft-primary text-primary ms-auto font-size-9">Soon</span>
+                <a href="#payrollDbSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.payroll.database', 'subscriber.payroll.process-attendance*', 'subscriber.payroll.punch-data-upload*') ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-data"></i>
+                        <span>Databases</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.payroll.database', 'subscriber.payroll.process-attendance*', 'subscriber.payroll.punch-data-upload*') ? 'show' : '' }}" id="payrollDbSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.payroll.database') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.database') }}" class="font-size-13 py-2">
+                            <i class="bx bx-coin-stack me-2"></i> Salary Structures
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.payroll.punch-data-upload*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.punch-data-upload') }}" class="font-size-13 py-2">
+                            <i class="bx bx-upload me-2"></i> Upload Punch Data
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.payroll.process-attendance*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.process-attendance') }}" class="font-size-13 py-2">
+                            <i class="bx bx-check-double me-2"></i> Process Attendance
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Tools Submenu -->
+            <li>
+                <a href="#payrollToolsSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.payroll.salary-generate', 'subscriber.payroll.payslip') ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-wrench"></i>
+                        <span>Tools</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.payroll.salary-generate', 'subscriber.payroll.payslip') ? 'show' : '' }}" id="payrollToolsSubmenu">
+                    <li class="{{ request()->routeIs('subscriber.payroll.salary-generate') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.salary-generate') }}" class="font-size-13 py-2">
+                            <i class="bx bx-calculator me-2"></i> Generate Salary
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('subscriber.payroll.payslip') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.payslip') }}" class="font-size-13 py-2">
+                            <i class="bx bx-receipt me-2"></i> Generate Payslips
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Reports Submenu -->
+            <li>
+                <a href="#payrollReportSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.payroll.report*') ? '' : 'collapsed' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-file"></i>
+                        <span>Reports</span>
+                    </div>
+                    <i class="bx bx-chevron-down font-size-14"></i>
+                </a>
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.payroll.report*') ? 'show' : '' }}" id="payrollReportSubmenu">
+                    <li class="{{ request('tab') === 'overview' || !request('tab') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'overview']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-bar-chart-alt-2 me-2"></i> Visual Overview
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'employee' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'employee']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-user me-2"></i> Employee Report
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'department' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'department']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-building me-2"></i> Department Report
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'punch' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'punch']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-data me-2"></i> Punch Report
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'leave' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'leave']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-calendar me-2"></i> Leave Report
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'timecard' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'timecard']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-time me-2"></i> Time Card
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'salary' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'salary']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-money me-2"></i> Salary Sheet
+                        </a>
+                    </li>
+                    <li class="{{ request('tab') === 'advance' ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.payroll.report', ['tab' => 'advance']) }}" class="font-size-13 py-2">
+                            <i class="bx bx-dollar me-2"></i> Advance Report
+                        </a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>

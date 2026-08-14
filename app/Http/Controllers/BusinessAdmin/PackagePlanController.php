@@ -21,6 +21,7 @@ class PackagePlanController extends Controller
             'price_monthly' => 'required|numeric|min:0',
             'price_yearly' => 'required|numeric|min:0',
             'max_devices' => 'required|integer|min:1',
+            'max_employees' => 'required|integer|min:1',
             'description' => 'nullable|string',
         ]);
 
@@ -39,6 +40,7 @@ class PackagePlanController extends Controller
             'price_monthly' => 'required|numeric|min:0',
             'price_yearly' => 'required|numeric|min:0',
             'max_devices' => 'required|integer|min:1',
+            'max_employees' => 'required|integer|min:1',
             'description' => 'nullable|string',
         ]);
 
@@ -46,5 +48,18 @@ class PackagePlanController extends Controller
 
         return redirect()->route('admin.business.plans.index')
             ->with('success', 'Package plan updated successfully.');
+    }
+
+    public function destroy(SubscriptionPlan $plan)
+    {
+        if ($plan->tenants()->count() > 0) {
+            return redirect()->route('admin.business.plans.index')
+                ->with('error', 'Cannot delete plan: ' . $plan->tenants()->count() . ' subscriber(s) are assigned to this plan.');
+        }
+
+        $plan->delete();
+
+        return redirect()->route('admin.business.plans.index')
+            ->with('success', 'Package plan deleted successfully.');
     }
 }

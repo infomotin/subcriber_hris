@@ -39,11 +39,19 @@ class DemoController extends Controller
 
     public function destroyDemoSession(Request $request)
     {
+        if (!Auth::check()) {
+            abort(403, 'Authentication required.');
+        }
+
+        $user = Auth::user();
+        if (!$user->hasRole('System Admin') && !$user->hasRole('Business Admin')) {
+            abort(403, 'Insufficient permissions.');
+        }
+
         $tenantId = session('tenant_id');
         $demoTenant = Tenant::where('id', $tenantId)->where('is_demo', true)->first();
 
         if ($demoTenant) {
-            // Destroy all demo sandbox data
             Device::withoutGlobalScopes()->where('tenant_id', $demoTenant->id)->delete();
             AttendanceLog::withoutGlobalScopes()->where('tenant_id', $demoTenant->id)->delete();
             ZktecoUser::withoutGlobalScopes()->where('tenant_id', $demoTenant->id)->delete();

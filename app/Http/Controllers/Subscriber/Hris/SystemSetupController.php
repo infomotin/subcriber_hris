@@ -246,15 +246,21 @@ class SystemSetupController extends Controller
             'dependents', 'nominees', 'bank_infos', 'employee_addresses',
         ];
 
-        $cmd = "mysqldump -h {$host} -P {$port} -u {$username}";
-        if ($password) $cmd .= " -p\"{$password}\"";
-        $cmd .= " {$database}";
+        $cmd = sprintf(
+            '%s -h %s -P %s -u %s',
+            escapeshellarg('mysqldump'),
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($username)
+        );
+        if ($password) $cmd .= sprintf(' -p%s', escapeshellarg($password));
+        $cmd .= sprintf(' %s', escapeshellarg($database));
 
         foreach ($tables as $table) {
-            $cmd .= " {$table} --where=\"tenant_id={$tenantId}\"";
+            $cmd .= sprintf(' %s --where=%s', escapeshellarg($table), escapeshellarg("tenant_id={$tenantId}"));
         }
 
-        $cmd .= " > \"{$fullPath}\" 2>&1";
+        $cmd .= sprintf(' > %s 2>&1', escapeshellarg($fullPath));
 
         exec($cmd, $output, $returnVar);
 
@@ -269,9 +275,15 @@ class SystemSetupController extends Controller
     public function downloadBackup($filename)
     {
         $tenantId = auth()->user()->tenant_id;
+        $filename = basename($filename);
         $path = storage_path("app/backups/{$tenantId}/{$filename}");
 
-        // Security: ensure the file belongs to this tenant
+        $realPath = realpath($path);
+        $backupDir = realpath(storage_path("app/backups/{$tenantId}"));
+        if ($realPath === false || $backupDir === false || !str_starts_with($realPath, $backupDir)) {
+            return redirect()->back()->with('error', 'Invalid backup file path.');
+        }
+
         if (!file_exists($path) || !str_starts_with($filename, 'backup_tenant' . $tenantId . '_')) {
             return redirect()->back()->with('error', 'Backup file not found or access denied.');
         }
@@ -282,7 +294,14 @@ class SystemSetupController extends Controller
     public function restoreBackup($filename)
     {
         $tenantId = auth()->user()->tenant_id;
+        $filename = basename($filename);
         $path = storage_path("app/backups/{$tenantId}/{$filename}");
+
+        $realPath = realpath($path);
+        $backupDir = realpath(storage_path("app/backups/{$tenantId}"));
+        if ($realPath === false || $backupDir === false || !str_starts_with($realPath, $backupDir)) {
+            return redirect()->back()->with('error', 'Invalid backup file path.');
+        }
 
         if (!file_exists($path) || !str_starts_with($filename, 'backup_tenant' . $tenantId . '_')) {
             return redirect()->back()->with('error', 'Backup file not found or access denied.');
@@ -295,14 +314,20 @@ class SystemSetupController extends Controller
         $username = $db['username'];
         $password = $db['password'];
 
-        $cmd = "mysql -h {$host} -P {$port} -u {$username}";
-        if ($password) $cmd .= " -p\"{$password}\"";
-        $cmd .= " {$database} < \"{$path}\" 2>&1";
+        $cmd = sprintf(
+            '%s -h %s -P %s -u %s',
+            escapeshellarg('mysql'),
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($username)
+        );
+        if ($password) $cmd .= sprintf(' -p%s', escapeshellarg($password));
+        $cmd .= sprintf(' %s < %s 2>&1', escapeshellarg($database), escapeshellarg($path));
 
         exec($cmd, $output, $returnVar);
 
         if ($returnVar !== 0) {
-            return redirect()->back()->with('error', 'Restore failed: ' . implode("\n", $output));
+            return redirect()->back()->with('error', 'Restore failed.');
         }
 
         return redirect()->back()->with('success', "Backup {$filename} restored successfully.");

@@ -38,6 +38,7 @@
                         <th>Heartbeat Pulse</th>
                         <th>Users</th>
                         <th>Punches</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,9 +55,14 @@
                             <td>{{ $device->last_heartbeat ? $device->last_heartbeat->diffForHumans() : 'Never' }}</td>
                             <td>{{ $device->user_count }}</td>
                             <td>{{ $device->att_count }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="checkDevice({{ $device->id }}, '{{ $device->name }}')" title="Test Communication">
+                                    <i class="bx bx-signal-5"></i> Test
+                                </button>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-muted py-5">No ZKTeco biometric machines registered under your tenant yet.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-5">No ZKTeco biometric machines registered under your tenant yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -103,5 +109,139 @@
     </div>
 </div>
 @endif
+
+<!-- Modal: Device Status Detail -->
+<div class="modal fade" id="modalDeviceStatus" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bx bx-chip text-primary me-2"></i> <span id="statusDeviceName">Device</span> — Connection Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="statusBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Checking device communication...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnRefreshStatus" onclick="refreshStatus()">
+                    <i class="bx bx-refresh me-1"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+let currentDeviceId = null;
+
+function checkDevice(id, name) {
+    currentDeviceId = id;
+    document.getElementById('statusDeviceName').textContent = name;
+    document.getElementById('statusBody').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Checking device communication...</p>
+        </div>
+    `;
+    const modal = new bootstrap.Modal(document.getElementById('modalDeviceStatus'));
+    modal.show();
+    refreshStatus();
+}
+
+function refreshStatus() {
+    if (!currentDeviceId) return;
+    document.getElementById('btnRefreshStatus').disabled = true;
+    document.getElementById('btnRefreshStatus').innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Checking...';
+
+    fetch('{{ url('subscriber/devices') }}/' + currentDeviceId + '/status')
+        .then(r => r.json())
+        .then(d => {
+            const onlineBadge = d.online
+                ? '<span class="badge bg-success font-size-13 px-3 py-2"><i class="bx bx-check-circle me-1"></i> ONLINE</span>'
+                : '<span class="badge bg-secondary font-size-13 px-3 py-2"><i class="bx bx-x-circle me-1"></i> OFFLINE</span>';
+
+            const heartbeatHtml = d.last_heartbeat
+                ? '<span title="' + d.last_heartbeat + '">' + d.last_heartbeat_humans + '</span>'
+                : '<span class="text-danger">Never connected</span>';
+
+            document.getElementById('statusBody').innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <h6 class="fw-bold font-size-12 mb-3">Device Identity</h6>
+                            <div class="font-size-13">
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Status</span>${onlineBadge}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Serial Number</span><code>${d.serial_number}</code></div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">IP Address</span>${d.ip_address || 'N/A'}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Port</span>${d.port}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Firmware</span>${d.firmware_version}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Push Version</span>${d.push_version}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Registered At</span>${d.registered_at}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <h6 class="fw-bold font-size-12 mb-3">Communication Status</h6>
+                            <div class="font-size-13">
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Heartbeat</span>${heartbeatHtml}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Timezone</span>${d.timezone}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Real-time Push</span>${d.realtime ? '<span class="text-success">Enabled</span>' : '<span class="text-warning">Disabled</span>'}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Delay</span>${d.delay}s</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Error Delay</span>${d.error_delay}s</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Trans Times</span>${d.trans_times}</div>
+                                <div class="d-flex justify-content-between py-1"><span class="text-muted">Trans Flag</span>${d.trans_flag}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                            <h6 class="fw-bold font-size-12 mb-2 text-green-700">Data Stats</h6>
+                            <div class="row text-center">
+                                <div class="col-4"><span class="fw-bold font-size-20 text-green-600">${d.user_count}</span><br><span class="font-size-11 text-muted">Users Synced</span></div>
+                                <div class="col-4"><span class="fw-bold font-size-20 text-primary">${d.att_count}</span><br><span class="font-size-11 text-muted">Punches Received</span></div>
+                                <div class="col-4">
+                                    ${d.online
+                                        ? '<span class="fw-bold font-size-20 text-success"><i class="bx bx-check-circle"></i></span><br><span class="font-size-11 text-muted">Communication OK</span>'
+                                        : '<span class="fw-bold font-size-20 text-danger"><i class="bx bx-x-circle"></i></span><br><span class="font-size-11 text-muted">No Recent Heartbeat</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${!d.online ? `
+                    <div class="col-12">
+                        <div class="p-3 rounded-3" style="background:#fef2f2;border:1px solid #fecaca;">
+                            <h6 class="fw-bold font-size-12 text-danger mb-1"><i class="bx bx-error-circle me-1"></i> Device appears OFFLINE</h6>
+                            <p class="font-size-12 text-muted mb-0">
+                                Last heartbeat was ${d.last_heartbeat_humans}. Ensure the device:<br>
+                                • Has internet/LAN connectivity<br>
+                                • Is configured with correct Server IP <code>15.235.229.40</code> and Port <code>80</code><br>
+                                • Has ADMS Cloud Server enabled in COMM settings<br>
+                                • Can reach this server (check firewall, proxy, DNS)
+                            </p>
+                        </div>
+                    </div>` : ''}
+                </div>
+            `;
+        })
+        .catch(e => {
+            document.getElementById('statusBody').innerHTML = `
+                <div class="text-center py-4 text-danger">
+                    <i class="bx bx-error-circle font-size-48"></i>
+                    <p class="mt-2">Failed to check device: ${e.message}</p>
+                </div>
+            `;
+        })
+        .finally(() => {
+            document.getElementById('btnRefreshStatus').disabled = false;
+            document.getElementById('btnRefreshStatus').innerHTML = '<i class="bx bx-refresh me-1"></i> Refresh';
+        });
+}
+</script>
+@endpush
 
 @endsection

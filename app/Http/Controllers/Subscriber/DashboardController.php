@@ -15,6 +15,7 @@ use App\Models\SalaryStructure;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\ZktecoUser;
+use App\Models\TenantConfig;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -33,6 +34,8 @@ class DashboardController extends Controller
     public function admsEndpoint()
     {
         $data = $this->prepareDashboardData();
+        $data['serverIp'] = env('ADMS_SERVER_IP', '15.235.229.40');
+        $data['serverHost'] = request()->getHttpHost();
         return view('subscriber.adms.endpoint', $data);
     }
 
@@ -40,6 +43,56 @@ class DashboardController extends Controller
     {
         $data = $this->prepareDashboardData();
         return view('subscriber.adms.punch-logs', $data);
+    }
+
+    public function admsHandshakeTest()
+    {
+        $data = $this->prepareDashboardData();
+        $data['serverIp'] = env('ADMS_SERVER_IP', '15.235.229.40');
+        $data['serverHost'] = request()->getHttpHost();
+        return view('subscriber.adms.handshake-test', $data);
+    }
+
+    /**
+     * Show ADMS Listener & Server Configuration page
+     */
+    public function admsListenerConfig()
+    {
+        $data = $this->prepareDashboardData();
+        $tenant = $data['tenant'];
+
+        // Load existing configs from TenantConfig (group: 'adms_listener')
+        $config = TenantConfig::getGroup('adms_listener');
+
+        $data['listener_port'] = $config['listener_port'] ?? '80';
+        $data['server_gateway'] = $config['server_gateway'] ?? request()->getHttpHost();
+        $data['heartbeat_interval'] = $config['heartbeat_interval'] ?? '30';
+        $data['gateway_enabled'] = $config['gateway_enabled'] ?? '1';
+
+        return view('subscriber.adms.listener-config', $data);
+    }
+
+    /**
+     * Save ADMS Listener & Server Configuration
+     */
+    public function updateAdmsListenerConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'listener_port' => 'required|integer|min:1|max:65535',
+            'server_gateway' => 'required|string|max:255',
+            'heartbeat_interval' => 'required|integer|min:5|max:3600',
+            'gateway_enabled' => 'required|in:0,1',
+        ]);
+
+        TenantConfig::setGroup('adms_listener', [
+            'listener_port' => $validated['listener_port'],
+            'server_gateway' => $validated['server_gateway'],
+            'heartbeat_interval' => $validated['heartbeat_interval'],
+            'gateway_enabled' => $validated['gateway_enabled'],
+        ]);
+
+        return redirect()->route('subscriber.adms.listener-config')
+            ->with('success', 'ADMS Listener & Server Configuration saved successfully.');
     }
 
     public function subscriptionOverview()

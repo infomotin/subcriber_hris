@@ -31,6 +31,13 @@ class SystemMonitoringController extends Controller
 
         $pushLogs = TenantPushLog::orderBy('id', 'desc')->take(15)->get();
 
-        return view('system_admin.monitoring.index', compact('logs', 'metrics', 'healthCheck', 'pushLogs', 'category'));
+        $listeningPorts = $this->monitorService->getListeningPorts();
+        $zkFlow = $this->monitorService->getZKDeviceFlow();
+        $portActivity = $this->monitorService->getPortActivity();
+
+        return view('system_admin.monitoring.index', compact(
+            'logs', 'metrics', 'healthCheck', 'pushLogs', 'category',
+            'listeningPorts', 'zkFlow', 'portActivity'
+        ));
     }
 }

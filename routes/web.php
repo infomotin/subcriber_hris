@@ -135,6 +135,7 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         // Subscriber Dedicated Scoped Views & Device Store
         Route::get('/devices', [SubscriberDeviceController::class, 'index'])->name('devices.index');
         Route::post('/devices', [SubscriberDeviceController::class, 'store'])->name('devices.store');
+        Route::get('/devices/{id}/status', [SubscriberDeviceController::class, 'checkStatus'])->name('devices.status');
         Route::get('/attendance', [SubscriberAttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/export', [SubscriberAttendanceController::class, 'export'])->name('attendance.export');
         Route::get('/users', [SubscriberUserController::class, 'index'])->name('users.index');
@@ -156,6 +157,12 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         Route::get('/adms/overview', [SubscriberDashboardController::class, 'admsOverview'])->name('adms.overview');
         Route::get('/adms/endpoint', [SubscriberDashboardController::class, 'admsEndpoint'])->name('adms.endpoint');
         Route::get('/adms/punch-logs', [SubscriberDashboardController::class, 'admsPunchLogs'])->name('adms.punch-logs');
+        Route::get('/adms/handshake-test', [SubscriberDashboardController::class, 'admsHandshakeTest'])->name('adms.handshake-test');
+
+        // ADMS Listener & Server Configuration
+        Route::get('/adms/listener-config', [SubscriberDashboardController::class, 'admsListenerConfig'])->name('adms.listener-config');
+        Route::post('/adms/listener-config', [SubscriberDashboardController::class, 'updateAdmsListenerConfig'])->name('adms.listener-config.update');
+
 
         // Subscription & Account Overview
         Route::get('/subscription', [SubscriberDashboardController::class, 'subscriptionOverview'])->name('subscription.overview');
@@ -267,6 +274,39 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::post('master-setup/salary-relation', [Hris\MasterSetupController::class, 'storeSalaryRelation'])->name('master.salary-relation');
             Route::post('master-setup/leave-balance', [Hris\MasterSetupController::class, 'storeLeaveBalance'])->name('master.leave-balance');
         });
+
+        // Payroll Module
+        Route::prefix('payroll')->name('payroll.')->group(function () {
+            Route::get('/salary-role', [\App\Http\Controllers\Subscriber\PayrollController::class, 'salaryRole'])->name('salary-role');
+            Route::post('/salary-role', [\App\Http\Controllers\Subscriber\PayrollController::class, 'storeSalaryRole'])->name('salary-role.store');
+            Route::post('/salary-role/{id}/activate', [\App\Http\Controllers\Subscriber\PayrollController::class, 'activateSalaryRole'])->name('salary-role.activate');
+            Route::put('/salary-role/{id}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'updateSalaryRole'])->name('salary-role.update');
+            Route::delete('/salary-role/{id}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'deleteSalaryRole'])->name('salary-role.delete');
+            Route::post('/salary-role/assignments', [\App\Http\Controllers\Subscriber\PayrollController::class, 'storeRoleAssignment'])->name('salary-role.assignments.store');
+            Route::delete('/salary-role/assignments/{id}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'deleteRoleAssignment'])->name('salary-role.assignments.delete');
+            Route::post('/salary-role/bonus-config', [\App\Http\Controllers\Subscriber\PayrollController::class, 'storeBonusConfig'])->name('salary-role.bonus-config.store');
+            Route::delete('/salary-role/bonus-config/{id}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'deleteBonusConfig'])->name('salary-role.bonus-config.delete');
+            Route::get('/database', [\App\Http\Controllers\Subscriber\PayrollController::class, 'database'])->name('database');
+            Route::get('/salary-generate', [\App\Http\Controllers\Subscriber\PayrollController::class, 'salaryGenerate'])->name('salary-generate');
+            Route::post('/salary-generate', [\App\Http\Controllers\Subscriber\PayrollController::class, 'generateSalary'])->name('salary-generate.generate');
+            Route::delete('/salary-generate/undo', [\App\Http\Controllers\Subscriber\PayrollController::class, 'deleteSalaryPayroll'])->name('salary-generate.undo');
+            Route::post('/salary-generate/confirm', [\App\Http\Controllers\Subscriber\PayrollController::class, 'confirmSalaryPayroll'])->name('salary-generate.confirm');
+            Route::get('/payslip', [\App\Http\Controllers\Subscriber\PayrollController::class, 'payslip'])->name('payslip');
+            Route::get('/download-template/{format}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'downloadTemplate'])->name('download-template');
+            Route::get('/punch-data-upload', [\App\Http\Controllers\Subscriber\PayrollController::class, 'punchDataUpload'])->name('punch-data-upload');
+            Route::post('/punch-data-upload', [\App\Http\Controllers\Subscriber\PayrollController::class, 'processPunchUpload'])->name('punch-data-upload.process');
+            Route::post('/punch-data-upload/toggle-live-sync', [\App\Http\Controllers\Subscriber\PayrollController::class, 'toggleLiveSync'])->name('punch-data-upload.toggle-live-sync');
+            Route::post('/punch-data-upload/sync-live', [\App\Http\Controllers\Subscriber\PayrollController::class, 'syncLivePunches'])->name('punch-data-upload.sync-live');
+            Route::get('/punch-data-upload/month-count', [\App\Http\Controllers\Subscriber\PayrollController::class, 'monthPunchCount'])->name('punch-data-upload.month-count');
+            Route::delete('/punch-data-upload/undo', [\App\Http\Controllers\Subscriber\PayrollController::class, 'undoPunchData'])->name('punch-data-upload.undo');
+            Route::get('/process-attendance', [\App\Http\Controllers\Subscriber\PayrollController::class, 'processAttendance'])->name('process-attendance');
+            Route::post('/process-attendance', [\App\Http\Controllers\Subscriber\PayrollController::class, 'runProcessAttendance'])->name('process-attendance.run');
+
+            Route::delete('/process-attendance/undo', [\App\Http\Controllers\Subscriber\PayrollController::class, 'undoProcessedAttendance'])->name('process-attendance.undo');
+            Route::get('/process-attendance/month-count', [\App\Http\Controllers\Subscriber\PayrollController::class, 'processedMonthCount'])->name('process-attendance.month-count');
+            Route::get('/report', [\App\Http\Controllers\Subscriber\PayrollController::class, 'report'])->name('report');
+            Route::get('/report/export/{type}', [\App\Http\Controllers\Subscriber\PayrollController::class, 'reportExport'])->name('report.export');
+        });
     });
 
     // Protected Admin Routes (Strictly Restricted to System Admin & Business Admin)
@@ -288,6 +328,7 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             // Website Manager
             Route::get('/website', [WebsiteManagerController::class, 'index'])->name('website.index');
             Route::post('/website', [WebsiteManagerController::class, 'update'])->name('website.update');
+            Route::get('/website/preview', [WebsiteManagerController::class, 'preview'])->name('website.preview');
 
             // System Monitoring (Logs by Category, Realtime Requests, Health)
             Route::get('/monitoring', [SystemMonitoringController::class, 'index'])->name('monitoring.index');
@@ -332,6 +373,10 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('subscribers', SubscriberController::class);
             Route::post('subscribers/{tenant}/reset-password', [SubscriberController::class, 'resetPassword'])->name('subscribers.reset_password');
             Route::post('subscribers/{tenant}/toggle-status', [SubscriberController::class, 'toggleStatus'])->name('subscribers.toggle_status');
+            Route::post('subscribers/{tenant}/record-payment', [SubscriberController::class, 'recordPayment'])->name('subscribers.record_payment');
+            Route::post('subscribers/{tenant}/send-email', [SubscriberController::class, 'sendEmail'])->name('subscribers.send_email');
+            Route::post('subscribers/bulk-email', [SubscriberController::class, 'sendBulkEmail'])->name('subscribers.bulk_email');
+            Route::get('subscribers/{tenant}/payments', [SubscriberController::class, 'paymentHistory'])->name('subscribers.payments');
 
             // Package Plans
             Route::resource('plans', PackagePlanController::class);

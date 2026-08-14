@@ -79,14 +79,14 @@ class DatabaseManagerController extends Controller
 
         $db = config('database.connections.mysql');
         $command = sprintf(
-            '"%s" --host=%s --port=%s --user=%s --password=%s %s > %s',
-            $this->findMysqldump(),
-            $db['host'],
-            $db['port'],
-            $db['username'],
-            $db['password'],
-            $db['database'],
-            $path
+            '%s --host=%s --port=%s --user=%s --password=%s %s > %s',
+            escapeshellarg($this->findMysqldump()),
+            escapeshellarg($db['host']),
+            escapeshellarg($db['port']),
+            escapeshellarg($db['username']),
+            escapeshellarg($db['password']),
+            escapeshellarg($db['database']),
+            escapeshellarg($path)
         );
 
         $output = null;
@@ -104,7 +104,16 @@ class DatabaseManagerController extends Controller
 
     public function downloadBackup($filename)
     {
+        $filename = basename($filename);
         $path = storage_path("app/backups/{$filename}");
+
+        $realPath = realpath($path);
+        $backupDir = realpath(storage_path('app/backups'));
+        if ($realPath === false || $backupDir === false || !str_starts_with($realPath, $backupDir)) {
+            return redirect()->route('admin.system.database.index')
+                ->with('error', 'Invalid backup file path.');
+        }
+
         if (!file_exists($path)) {
             return redirect()->route('admin.system.database.index')
                 ->with('error', 'Backup file not found.');
@@ -114,7 +123,16 @@ class DatabaseManagerController extends Controller
 
     public function deleteBackup($filename)
     {
+        $filename = basename($filename);
         $path = storage_path("app/backups/{$filename}");
+
+        $realPath = realpath($path);
+        $backupDir = realpath(storage_path('app/backups'));
+        if ($realPath === false || $backupDir === false || !str_starts_with($realPath, $backupDir)) {
+            return redirect()->route('admin.system.database.index')
+                ->with('error', 'Invalid backup file path.');
+        }
+
         if (file_exists($path)) {
             unlink($path);
         }
@@ -125,11 +143,24 @@ class DatabaseManagerController extends Controller
     public function restore(Request $request)
     {
         $request->validate([
-            'backup_file' => 'required|string',
+            'backup_file' => 'required|string|max:255',
         ]);
 
-        $filename = $request->input('backup_file');
+        $filename = basename($request->input('backup_file'));
+
+        if (!preg_match('/^backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.sql$/', $filename)) {
+            return redirect()->route('admin.system.database.index')
+                ->with('error', 'Invalid backup filename format.');
+        }
+
         $path = storage_path("app/backups/{$filename}");
+
+        $realPath = realpath($path);
+        $backupDir = realpath(storage_path('app/backups'));
+        if ($realPath === false || $backupDir === false || !str_starts_with($realPath, $backupDir)) {
+            return redirect()->route('admin.system.database.index')
+                ->with('error', 'Invalid backup file path.');
+        }
 
         if (!file_exists($path)) {
             return redirect()->route('admin.system.database.index')
@@ -138,14 +169,14 @@ class DatabaseManagerController extends Controller
 
         $db = config('database.connections.mysql');
         $command = sprintf(
-            '"%s" --host=%s --port=%s --user=%s --password=%s %s < %s',
-            $this->findMysql(),
-            $db['host'],
-            $db['port'],
-            $db['username'],
-            $db['password'],
-            $db['database'],
-            $path
+            '%s --host=%s --port=%s --user=%s --password=%s %s < %s',
+            escapeshellarg($this->findMysql()),
+            escapeshellarg($db['host']),
+            escapeshellarg($db['port']),
+            escapeshellarg($db['username']),
+            escapeshellarg($db['password']),
+            escapeshellarg($db['database']),
+            escapeshellarg($path)
         );
 
         $output = null;
@@ -161,16 +192,42 @@ class DatabaseManagerController extends Controller
             ->with('success', "Database restored from {$filename}");
     }
 
+    private const ALLOWED_SQL_PREFIXES = [
+        'SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN',
+    ];
+
+    private const BLOCKED_SQL_PATTERNS = [
+        '/\b(DROP|TRUNCATE|ALTER|GRANT|REVOKE|CREATE\s+USER|DROP\s+USER|INTO\s+(OUTFILE|DUMPFILE))\b/i',
+        '/\b(DELETE|UPDATE|INSERT)\b.*\b(FROM|INTO|SET)\b/i',
+        '/;\s*(DROP|DELETE|UPDATE|INSERT|ALTER|TRUNCATE)\b/i',
+        '/--|\/\*|\*\//',
+    ];
+
     public function executeSql(Request $request)
     {
         $request->validate([
-            'sql' => 'required|string',
+            'sql' => 'required|string|max:5000',
         ]);
 
         $sql = trim($request->input('sql'));
 
+        $upperSql = strtoupper(preg_replace('/\s+/', ' ', $sql));
+
+        $firstKeyword = preg_split('/\s+/', $upperSql, 2)[0] ?? '';
+        if (! in_array($firstKeyword, self::ALLOWED_SQL_PREFIXES, true)) {
+            return redirect()->route('admin.system.database.index', ['tab' => 'sql'])
+                ->with('sql_error', 'Only SELECT, SHOW, DESCRIBE, and EXPLAIN queries are permitted.');
+        }
+
+        foreach (self::BLOCKED_SQL_PATTERNS as $pattern) {
+            if (preg_match($pattern, $sql)) {
+                return redirect()->route('admin.system.database.index', ['tab' => 'sql'])
+                    ->with('sql_error', 'This query contains blocked SQL operations (DDL/DML statements are not allowed).');
+            }
+        }
+
         try {
-            $isSelect = str_starts_with(strtoupper($sql), 'SELECT');
+            $isSelect = str_starts_with($upperSql, 'SELECT');
 
             if ($isSelect) {
                 $results = DB::select($sql);
@@ -196,7 +253,7 @@ class DatabaseManagerController extends Controller
                 ]);
         } catch (\Exception $e) {
             return redirect()->route('admin.system.database.index', ['tab' => 'sql'])
-                ->with('sql_error', $e->getMessage());
+                ->with('sql_error', 'Query execution failed.');
         }
     }
 

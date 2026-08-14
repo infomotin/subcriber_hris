@@ -63,10 +63,12 @@ class SslCommerzService
             'product_profile' => 'non-physical-goods',
         ];
 
+        $gatewayUrl = $this->sendToGateway($postData);
+
         return [
             'payment_log' => $paymentLog,
             'post_data' => $postData,
-            'redirect_url' => route('subscription.ssl.mock_checkout', ['tran_id' => $tranId]),
+            'redirect_url' => $gatewayUrl,
         ];
     }
 
@@ -104,5 +106,37 @@ class SslCommerzService
         }
 
         return true;
+    }
+
+    protected function sendToGateway(array $postData): string
+    {
+        $sandboxUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
+        $liveUrl = 'https://securepay.sslcommerz.com/gwprocess/v4/api.php';
+        $apiUrl = $this->isSandbox ? $sandboxUrl : $liveUrl;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $apiUrl);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            return route('subscription.ssl.mock_checkout', ['tran_id' => $postData['tran_id']]);
+        }
+
+        $result = json_decode($response, true);
+
+        if (isset($result['status']) && $result['status'] === 'SUCCESS' && !empty($result['GatewayPageURL'])) {
+            return $result['GatewayPageURL'];
+        }
+
+        return route('subscription.ssl.mock_checkout', ['tran_id' => $postData['tran_id']]);
     }
 }

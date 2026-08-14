@@ -3,180 +3,317 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZKTeco ADMS SaaS | Cloud Biometric Attendance Platform</title>
+    <title>ADMS HRIS & Payroll | Cloud HR & Attendance Platform</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap 5 CSS & FontAwesome / Boxicons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #0f172a 100%);
-            --hero-bg: #0f172a;
-            --accent: #10b981;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #495057;
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
             overflow-x: hidden;
         }
 
-        /* Top Navbar */
-        .navbar-custom {
-            background: rgba(30, 34, 41, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #eef2ff;
+            --accent: #06b6d4;
+            --accent2: #10b981;
+            --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
         }
 
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
         .navbar-brand {
             font-weight: 800;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             color: #fff !important;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .navbar-brand i { color: var(--primary); font-size: 2rem; }
+        .nav-link { color: rgba(255,255,255,0.65) !important; font-weight: 500; font-size: 0.9rem; transition: all 0.2s; }
+        .nav-link:hover { color: #fff !important; }
 
-        .navbar-brand i {
-            color: #556ee6;
-            font-size: 1.8rem;
-        }
-
-        /* Hero Section */
-        .hero-section {
-            background: var(--hero-bg);
+        .hero {
+            background: var(--gradient-hero);
             color: #fff;
-            padding: 6rem 0 7rem 0;
+            padding: 7rem 0 8rem;
             position: relative;
-            background-image: radial-gradient(circle at 80% 20%, rgba(85, 110, 230, 0.15) 0%, transparent 50%);
+            overflow: hidden;
         }
-
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(99,102,241,0.15);
+            border: 1px solid rgba(99,102,241,0.3);
+            color: #a5b4fc;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
         .hero-title {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1.2;
-            background: linear-gradient(135deg, #ffffff 0%, #a6b0cf 100%);
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 50%, #67e8f9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .badge-hero {
-            background: rgba(85, 110, 230, 0.2);
-            color: #798ec4;
-            border: 1px solid rgba(85, 110, 230, 0.4);
-            padding: 8px 16px;
-            border-radius: 50px;
+        .hero-sub {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.55);
+            max-width: 600px;
+            line-height: 1.7;
+        }
+        .btn-primary-custom {
+            background: var(--primary);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
             font-weight: 600;
-            font-size: 0.85rem;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(99,102,241,0.3);
+        }
+        .btn-outline-hero {
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .btn-outline-hero:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.4);
+            color: #fff;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .hero-stat h3 { font-size: 2rem; font-weight: 800; margin-bottom: 0; }
+        .hero-stat p { color: rgba(255,255,255,0.45); font-size: 0.85rem; margin-bottom: 0; }
+
+        section { padding: 5rem 0; }
+        .section-label {
+            display: inline-block;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.75rem;
+        }
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+        .section-sub {
+            color: #64748b;
+            font-size: 1.05rem;
+            max-width: 600px;
         }
 
         .feature-card {
-            border: none;
-            border-radius: 12px;
-            padding: 2rem;
-            background: #ffffff;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            transition: all 0.3s ease;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            transition: all 0.4s;
             height: 100%;
         }
-
         .feature-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(85, 110, 230, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(99,102,241,0.08);
         }
-
         .feature-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            background: rgba(85, 110, 230, 0.1);
-            color: #556ee6;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
         }
+        .feature-icon.green { background: #ecfdf5; color: var(--accent2); }
+        .feature-icon.cyan { background: #ecfeff; color: var(--accent); }
+        .feature-icon.amber { background: #fffbeb; color: #f59e0b; }
+        .feature-icon.rose { background: #fff1f2; color: #f43f5e; }
+        .feature-card h5 { font-weight: 700; margin-bottom: 0.75rem; color: #0f172a; }
+        .feature-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 0; line-height: 1.7; }
 
-        /* Plan Pricing Card */
-        .pricing-card {
-            border: 1px solid #eff2f7;
-            border-radius: 16px;
+        .module-card {
             background: #fff;
-            padding: 2.5rem 2rem;
-            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.75rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .module-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(99,102,241,0.06);
+        }
+        .module-card i { font-size: 2rem; color: var(--primary); margin-bottom: 1rem; }
+        .module-card h6 { font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+        .module-card p { color: #64748b; font-size: 0.85rem; margin-bottom: 0; }
+
+        .pricing-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.3s;
             position: relative;
         }
-
         .pricing-card.featured {
-            border: 2px solid #556ee6;
-            box-shadow: 0 15px 40px rgba(85, 110, 230, 0.15);
+            border: 2px solid var(--primary);
+            box-shadow: 0 20px 50px rgba(99,102,241,0.12);
         }
-
         .pricing-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
         }
-
-        .btn-primary-custom {
-            background: #4f46e5;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 600;
+        .pricing-card .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
             color: #fff;
-            transition: all 0.2s ease;
+            padding: 4px 20px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
+        .pricing-card .price { font-size: 3rem; font-weight: 900; color: #0f172a; }
+        .pricing-card .price span { font-size: 1rem; font-weight: 400; color: #64748b; }
+        .pricing-card ul { list-style: none; padding: 0; margin: 1.5rem 0; }
+        .pricing-card ul li { padding: 0.5rem 0; color: #475569; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .pricing-card ul li i { color: var(--accent2); font-size: 1.1rem; }
 
-        .btn-primary-custom:hover {
-            background: #4338ca;
-            color: #fff;
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
-        }
-
-        /* Role Pill Cards */
-        .role-pill-card {
+        .role-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
             background: #fff;
-            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
             padding: 1.5rem;
-            border-left: 4px solid #556ee6;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: all 0.3s;
+        }
+        .role-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(99,102,241,0.06);
+        }
+        .role-card i { font-size: 2.2rem; flex-shrink: 0; }
+        .role-card h6 { font-weight: 700; color: #0f172a; margin-bottom: 0.25rem; }
+        .role-card p { color: #64748b; font-size: 0.85rem; margin-bottom: 0; }
+
+        .cta-section {
+            background: var(--gradient-hero);
+            padding: 5rem 0;
+            text-align: center;
+            color: #fff;
+        }
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        footer {
+            background: #0f172a;
+            color: rgba(255,255,255,0.5);
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+        footer a:hover { color: #fff; }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero { padding: 5rem 0 5rem; }
+            .section-title { font-size: 1.75rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="bx bx-fingerprint"></i> ZKTeco ADMS SaaS
-            </a>
-            <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="fa fa-bars"></i>
+            <a class="navbar-brand" href="/"><i class="bx bx-fingerprint"></i> ADMS HRIS</a>
+            <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+                <i class="fa fa-bars text-white fs-4"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-3">
-                    <li class="nav-item"><a class="nav-link text-white-50 fw-medium" href="#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link text-white-50 fw-medium" href="#pricing">Pricing Plans</a></li>
-                    <li class="nav-item"><a class="nav-link text-white-50 fw-medium" href="#roles">SaaS Roles</a></li>
-
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2 gap-lg-3">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#modules">Modules</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#roles">Roles</a></li>
                     <li class="nav-item">
                         <a href="{{ route('demo.dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                            <i class="bx bx-play-circle me-1"></i> Public Demo Sandbox
+                            <i class="bx bx-play-circle me-1"></i> Demo
                         </a>
                     </li>
-
                     @auth
                         <li class="nav-item">
                             <a href="{{ route('admin.dashboard') }}" class="btn btn-primary-custom btn-sm">
@@ -184,9 +321,7 @@
                             </a>
                         </li>
                     @else
-                        <li class="nav-item">
-                            <a href="{{ route('login') }}" class="btn btn-link text-white text-decoration-none fw-medium">Log In</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Log In</a></li>
                         <li class="nav-item">
                             <a href="{{ route('register') }}" class="btn btn-primary-custom btn-sm">Get Started</a>
                         </li>
@@ -196,109 +331,138 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container text-center">
-            <span class="badge-hero mb-3 d-inline-block">
-                <i class="bx bx-shield-check me-1"></i> Multi-Tenant ZKTeco Biometric Cloud ADMS Engine
-            </span>
-            <h1 class="hero-title mb-4 max-w-800 mx-auto">
-                Connect Physical ZKTeco Biometric Terminals to the Cloud
-            </h1>
-            <p class="lead text-white-50 max-w-700 mx-auto mb-5">
-                Multi-tenant attendance automation for enterprises, small businesses, and institutions. Dedicated tenant ADMS token endpoints, real-time punch feeds, automated command queue, and SSLCommerz payment billing.
-            </p>
-
-            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="{{ route('register') }}" class="btn btn-primary-custom btn-lg">
-                    <i class="bx bx-rocket me-2"></i> Register Organization Plan
-                </a>
-                <a href="{{ route('demo.dashboard') }}" class="btn btn-outline-light btn-lg rounded-3">
-                    <i class="bx bx-laptop me-2"></i> Instant Public Demo Sandbox
-                </a>
-            </div>
-
-            <!-- Fast Stats Row -->
-            <div class="row mt-5 pt-4 text-center justify-content-center">
-                <div class="col-md-3 col-6 mb-3">
-                    <h2 class="fw-bold text-white mb-0">100%</h2>
-                    <small class="text-white-50">ZKTeco Push ADMS Compatible</small>
+    <section class="hero">
+        <div class="container position-relative">
+            <div class="text-center">
+                <div class="hero-badge">
+                    <i class="bx bx-shield-check"></i> All-in-One HRIS & Payroll SaaS Platform
                 </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <h2 class="fw-bold text-success mb-0">Single DB</h2>
-                    <small class="text-white-50">Strict Tenant Data Isolation</small>
+                <h1 class="hero-title mb-4">
+                    HRIS. Payroll.<br>
+                    Live Attendance.
+                </h1>
+                <p class="hero-sub mx-auto mb-5">
+                    A complete cloud-based HR management system with biometric live attendance, 
+                    automated payroll generation, leave management, and powerful HR analytics 
+                    for enterprises of all sizes.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap mb-5">
+                    <a href="{{ route('register') }}" class="btn btn-primary-custom btn-lg">
+                        <i class="bx bx-rocket me-2"></i> Start Free Trial
+                    </a>
+                    <a href="{{ route('demo.dashboard') }}" class="btn btn-outline-hero btn-lg">
+                        <i class="bx bx-laptop me-2"></i> Live Demo
+                    </a>
                 </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <h2 class="fw-bold text-info mb-0">Realtime</h2>
-                    <small class="text-white-50">Instant Punch Sync & SMS Alerts</small>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <h3>{{ $totalTenants > 0 ? $totalTenants : '100' }}+</h3>
+                        <p>Active Organizations</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h3>50K+</h3>
+                        <p>Employees Managed</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h3>99.9%</h3>
+                        <p>Uptime Guaranteed</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-5">
-        <div class="container py-4">
+    <section id="features">
+        <div class="container">
             <div class="text-center mb-5">
-                <span class="text-primary text-uppercase fw-bold font-size-12">Core Capabilities</span>
-                <h2 class="fw-bold">Enterprise SaaS Features</h2>
+                <span class="section-label">Platform Capabilities</span>
+                <h2 class="section-title">Everything You Need to Manage HR</h2>
+                <p class="section-sub mx-auto">From biometric attendance to automated payroll — one platform, zero hassle.</p>
             </div>
-
             <div class="row g-4">
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon"><i class="bx bx-key"></i></div>
-                        <h5 class="fw-bold">Dedicated Tenant Endpoints</h5>
-                        <p class="text-muted font-size-14">Each subscriber receives a tokenized ADMS URL (<code>/iclock/{token}/cdata</code>) to point their physical biometric terminals.</p>
+                        <div class="feature-icon"><i class="bx bx-camera"></i></div>
+                        <h5>Live Biometric Attendance</h5>
+                        <p>Real-time punch logging from ZKTeco biometric devices with instant sync and SMS/email alerts.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon" style="background: rgba(52, 195, 143, 0.1); color: #34c38f;"><i class="bx bx-terminal"></i></div>
-                        <h5 class="fw-bold">Remote Command Queue</h5>
-                        <p class="text-muted font-size-14">Queue remote commands like reboot, log clearance, user sync, and device info queries to execute on physical machines.</p>
+                        <div class="feature-icon green"><i class="bx bx-dollar-circle"></i></div>
+                        <h5>Auto Salary Generate</h5>
+                        <p>Configure salary structures, auto-calculate based on attendance, deductions, and generate payslips.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon" style="background: rgba(80, 165, 241, 0.1); color: #50a5f1;"><i class="bx bx-credit-card"></i></div>
-                        <h5 class="fw-bold">SSLCommerz Billing</h5>
-                        <p class="text-muted font-size-14">Automated subscription payments via card, bKash, and mobile banking with instant quota extensions.</p>
+                        <div class="feature-icon cyan"><i class="bx bx-calendar-check"></i></div>
+                        <h5>Leave & Movement Management</h5>
+                        <p>Full leave lifecycle with balance tracking, approval workflows, movement passes, and calendar view.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon amber"><i class="bx bx-line-chart"></i></div>
+                        <h5>HR Analytics & Reports</h5>
+                        <p>KPI tracking, increment rules, promotion pipelines, and comprehensive HR analytics dashboards.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-5 bg-white">
-        <div class="container py-4">
+    <section id="modules" style="background: #fff;">
+        <div class="container">
             <div class="text-center mb-5">
-                <span class="text-primary text-uppercase fw-bold font-size-12">Flexible Pricing</span>
-                <h2 class="fw-bold">Subscription Package Plans</h2>
+                <span class="section-label">HRIS Modules</span>
+                <h2 class="section-title">Complete HR & Payroll Suite</h2>
+                <p class="section-sub mx-auto">All the modules you need to run your HR operations seamlessly.</p>
             </div>
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-user-plus"></i><h6>Employee Management</h6><p>Profiles, documents, education, experience</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-fingerprint"></i><h6>Biometric Integration</h6><p>ZKTeco ADMS cloud sync engine</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-buildings"></i><h6>Departments & Designations</h6><p>Org structure & hierarchy</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-time-five"></i><h6>Work Shifts</h6><p>Shift scheduling & roster</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-wallet"></i><h6>Payroll & Salary</h6><p>Auto salary generation & structures</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-calendar"></i><h6>Leave Management</h6><p>Types, balances, applications</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-trending-up"></i><h6>KPI & Performance</h6><p>Goals, reviews, ratings</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-up-arrow-circle"></i><h6>Promotions & Increments</h6><p>Career progression tracking</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-file"></i><h6>Bill & Expense</h6><p>Bill types, purposes, approvals</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-git-branch"></i><h6>Movement Passes</h6><p>Employee movement tracking</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-check-shield"></i><h6>Verification</h6><p>Employee document verification</p></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="module-card"><i class="bx bx-lock"></i><h6>Roles & Permissions</h6><p>Granular access control</p></div></div>
+            </div>
+        </div>
+    </section>
 
+    <section id="pricing">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-label">Pricing</span>
+                <h2 class="section-title">Simple, Transparent Pricing</h2>
+                <p class="section-sub mx-auto">Choose a plan that fits your organization size.</p>
+            </div>
             <div class="row g-4 justify-content-center">
                 @foreach($plans as $plan)
                     <div class="col-lg-4 col-md-6">
                         <div class="pricing-card {{ $loop->iteration == 2 ? 'featured' : '' }}">
                             @if($loop->iteration == 2)
-                                <span class="badge bg-primary position-absolute top-0 end-0 m-3 px-3 py-2">Most Popular</span>
+                                <div class="popular-badge">Most Popular</div>
                             @endif
-                            <h5 class="fw-bold text-dark mb-1">{{ $plan->name }}</h5>
-                            <p class="text-muted font-size-13">{{ $plan->description }}</p>
-                            <h1 class="fw-bold my-4 text-dark">{{ number_format($plan->price_monthly, 0) }} <span class="font-size-14 text-muted font-weight-normal">BDT / mo</span></h1>
-
-                            <ul class="list-unstyled mb-4 font-size-14">
-                                <li class="mb-3"><i class="bx bx-check-circle text-success me-2 font-size-18"></i> Up to <strong>{{ $plan->max_devices }}</strong> Biometric Terminals</li>
-                                <li class="mb-3"><i class="bx bx-check-circle text-success me-2 font-size-18"></i> Realtime Push Punch Logging</li>
-                                <li class="mb-3"><i class="bx bx-check-circle text-success me-2 font-size-18"></i> Year Discount: <strong>{{ number_format($plan->price_yearly, 0) }} BDT/yr</strong></li>
+                            <h5 class="fw-bold mb-1">{{ $plan->name }}</h5>
+                            <p class="text-muted" style="font-size:0.9rem;">{{ $plan->description }}</p>
+                            <div class="price">{{ number_format($plan->price_monthly, 0) }} <span>/mo</span></div>
+                            <p style="font-size:0.85rem; color:#94a3b8;">{{ number_format($plan->price_yearly, 0) }} BDT/year</p>
+                            <ul>
+                                <li><i class="bx bx-check-circle"></i> Up to <strong>{{ $plan->max_devices }}</strong> biometric devices</li>
+                                <li><i class="bx bx-check-circle"></i> Full HRIS module access</li>
+                                <li><i class="bx bx-check-circle"></i> Auto payroll generation</li>
+                                <li><i class="bx bx-check-circle"></i> Realtime attendance sync</li>
+                                <li><i class="bx bx-check-circle"></i> Email & SMS support</li>
                             </ul>
-
                             <a href="{{ route('register', ['plan' => $plan->id]) }}" class="btn btn-primary-custom w-100">
-                                Select {{ $plan->name }}
+                                Get Started
                             </a>
                         </div>
                     </div>
@@ -307,59 +471,47 @@
         </div>
     </section>
 
-    <!-- SaaS Roles Overview Section -->
-    <section id="roles" class="py-5">
-        <div class="container py-4">
+    <section id="roles" style="background: #fff;">
+        <div class="container">
             <div class="text-center mb-5">
-                <span class="text-primary text-uppercase fw-bold font-size-12">Access Control</span>
-                <h2 class="fw-bold">4 Role-Based Dashboard Panels</h2>
+                <span class="section-label">Access Levels</span>
+                <h2 class="section-title">Four Role-Based Dashboards</h2>
+                <p class="section-sub mx-auto">Tailored experiences for every stakeholder in your organization.</p>
             </div>
-
             <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="role-pill-card">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bx bx-shield-quarter text-danger font-size-36"></i>
-                            <div>
-                                <h6 class="fw-bold mb-1">System Admin Dashboard</h6>
-                                <p class="text-muted mb-0 font-size-13">Application health, log viewer, network diagnostics, DB ping metrics, system audit.</p>
-                            </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="role-card">
+                        <i class="bx bx-shield-quarter" style="color:#ef4444;"></i>
+                        <div>
+                            <h6>System Admin</h6>
+                            <p>Application health, monitoring, security audits, database management.</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="role-pill-card" style="border-left-color: #50a5f1;">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bx bx-briefcase text-info font-size-36"></i>
-                            <div>
-                                <h6 class="fw-bold mb-1">Business Admin Dashboard</h6>
-                                <p class="text-muted mb-0 font-size-13">Subscriber management, package builder, SSLCommerz transaction logs, broadcast SMS.</p>
-                            </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="role-card">
+                        <i class="bx bx-briefcase" style="color:#3b82f6;"></i>
+                        <div>
+                            <h6>Business Admin</h6>
+                            <p>Subscriber management, package plans, billing & revenue.</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="role-pill-card" style="border-left-color: #34c38f;">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bx bx-user-check text-success font-size-36"></i>
-                            <div>
-                                <h6 class="fw-bold mb-1">Subscriber Tenant Portal</h6>
-                                <p class="text-muted mb-0 font-size-13">Organization attendance dashboard, machine limits, biometric user roster, custom ADMS setup.</p>
-                            </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="role-card">
+                        <i class="bx bx-user-check" style="color:#10b981;"></i>
+                        <div>
+                            <h6>Tenant Portal</h6>
+                            <p>Full HRIS, attendance, payroll, devices, employee management.</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="role-pill-card" style="border-left-color: #f1b44c;">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bx bx-play-circle text-warning font-size-36"></i>
-                            <div>
-                                <h6 class="fw-bold mb-1">Public Sandbox Demo Account</h6>
-                                <p class="text-muted mb-0 font-size-13">Sandbox environment to test physical ZKTeco machine setups; auto-destroys on logout.</p>
-                            </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="role-card">
+                        <i class="bx bx-play-circle" style="color:#f59e0b;"></i>
+                        <div>
+                            <h6>Public Demo</h6>
+                            <p>Sandbox environment to explore all features risk-free.</p>
                         </div>
                     </div>
                 </div>
@@ -367,10 +519,26 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white-50 py-4 text-center border-top border-secondary">
+    <section class="cta-section">
         <div class="container">
-            <p class="mb-0 font-size-14">&copy; {{ date('Y') }} ZKTeco ADMS SaaS Platform. All Rights Reserved.</p>
+            <h2 class="mb-3">Ready to Transform Your HR Operations?</h2>
+            <p style="color:rgba(255,255,255,0.6); font-size:1.1rem; max-width:500px; margin:0 auto 2rem;">
+                Join thousands of organizations using ADMS HRIS to streamline attendance, payroll, and HR management.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ route('register') }}" class="btn btn-primary-custom btn-lg px-5">
+                    <i class="bx bx-rocket me-2"></i> Start Free Trial
+                </a>
+                <a href="{{ route('demo.dashboard') }}" class="btn btn-outline-hero btn-lg px-5">
+                    <i class="bx bx-laptop me-2"></i> View Demo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p class="mb-0">&copy; {{ date('Y') }} ADMS HRIS & Payroll Platform. All rights reserved. Powered by <a href="#">Nexozaint</a></p>
         </div>
     </footer>
 

@@ -54,4 +54,34 @@ class DeviceController extends Controller
         return redirect()->route('subscriber.devices.index')
             ->with('success', "Biometric machine '{$validated['name']}' registered successfully under your quota.");
     }
+
+    public function checkStatus($id)
+    {
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $device = Device::where('tenant_id', $tenant->id)->findOrFail($id);
+
+        return response()->json([
+            'id' => $device->id,
+            'name' => $device->name,
+            'serial_number' => $device->serial_number,
+            'ip_address' => $device->ip_address,
+            'port' => $device->port,
+            'firmware_version' => $device->firmware_version ?? 'Unknown',
+            'push_version' => $device->push_version ?? 'Unknown',
+            'status' => $device->isOnline() ? 'online' : 'offline',
+            'online' => $device->isOnline(),
+            'last_heartbeat' => $device->last_heartbeat?->format('Y-m-d H:i:s'),
+            'last_heartbeat_humans' => $device->last_heartbeat ? $device->last_heartbeat->diffForHumans() : 'Never',
+            'user_count' => $device->user_count,
+            'att_count' => $device->att_count,
+            'timezone' => $device->timezone ?? 'UTC',
+            'realtime' => $device->realtime ?? false,
+            'delay' => $device->delay ?? 30,
+            'error_delay' => $device->error_delay ?? 60,
+            'trans_times' => $device->trans_times ?? 'Not set',
+            'trans_interval' => $device->trans_interval ?? 1,
+            'trans_flag' => $device->trans_flag ?? 'Not set',
+            'registered_at' => $device->created_at->format('Y-m-d H:i:s'),
+        ]);
+    }
 }

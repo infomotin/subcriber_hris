@@ -16,6 +16,7 @@ class SubscriptionPlan extends Model
         'price_monthly',
         'price_yearly',
         'max_devices',
+        'max_employees',
         'description',
         'features',
         'status',
@@ -25,6 +26,7 @@ class SubscriptionPlan extends Model
         'price_monthly' => 'float',
         'price_yearly' => 'float',
         'max_devices' => 'integer',
+        'max_employees' => 'integer',
         'features' => 'array',
     ];
 

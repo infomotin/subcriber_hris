@@ -41,8 +41,8 @@
         <form action="{{ route('subscription.ssl.success') }}" method="POST">
             @csrf
             <input type="hidden" name="tran_id" value="{{ $paymentLog->tran_id }}">
-            <input type="hidden" name="val_id" value="VAL_{{ Str::random(10) }}">
-            
+            <input type="hidden" name="val_id" value="VAL_{{ \Illuminate\Support\Str::random(10) }}">
+
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-success btn-lg"><i class="bx bx-check-circle me-1"></i> Confirm & Pay via bKash / Card</button>
                 <a href="{{ route('subscription.ssl.cancel') }}" class="btn btn-outline-danger">Cancel Payment</a>

@@ -98,7 +98,11 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $tenant = auth()->user()?->tenant ?? Tenant::first();
-        
+
+        if ($tenant && !$tenant->canAddEmployee()) {
+            return back()->with('error', "Employee registration quota reached ({$tenant->employees()->count()} / {$tenant->max_employees}). Please upgrade your subscription plan to add more employees.");
+        }
+
         $validated = $request->validate([
             // User login details
             'name' => 'required|string|max:255',

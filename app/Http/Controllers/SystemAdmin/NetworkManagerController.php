@@ -12,13 +12,26 @@ class NetworkManagerController extends Controller
     public function index()
     {
         $setting = (object) [
-            'adms_port' => (int) NetworkSetting::get('adms_port', 8000),
-            'gateway_ip' => NetworkSetting::get('gateway_ip', '127.0.0.1'),
+            'adms_port' => (int) NetworkSetting::get('adms_port', 80),
+            'gateway_ip' => NetworkSetting::get('gateway_ip', env('ADMS_SERVER_IP', '15.235.229.40')),
             'push_interval' => (int) NetworkSetting::get('push_interval', 30),
             'is_adms_active' => (bool) NetworkSetting::get('is_adms_active', true),
         ];
 
-        $activeDevices = Device::withoutGlobalScopes()->orderBy('last_heartbeat', 'desc')->get();
+        $devices = Device::withoutGlobalScopes()->orderBy('last_heartbeat', 'desc')->get();
+
+        $activeDevices = $devices->map(function ($dev) {
+            return (object) [
+                'id' => $dev->id,
+                'serial_number' => $dev->serial_number,
+                'ip_address' => $dev->ip_address,
+                'name' => $dev->name,
+                'tenant' => $dev->tenant,
+                'last_heartbeat' => $dev->last_heartbeat,
+                'is_online' => $dev->isOnline(),
+                'status' => $dev->isOnline() ? 'online' : 'offline',
+            ];
+        });
 
         return view('system_admin.network.index', compact('setting', 'activeDevices'));
     }

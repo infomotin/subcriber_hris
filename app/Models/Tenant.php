@@ -21,6 +21,7 @@ class Tenant extends Model
         'status',
         'expires_at',
         'max_devices',
+        'max_employees',
         'is_demo',
     ];
 
@@ -28,6 +29,7 @@ class Tenant extends Model
         'expires_at' => 'datetime',
         'is_demo' => 'boolean',
         'max_devices' => 'integer',
+        'max_employees' => 'integer',
     ];
 
     public static function boot(): void
@@ -87,5 +89,15 @@ class Tenant extends Model
     public function canAddDevice(): bool
     {
         return $this->devices()->count() < $this->max_devices;
+    }
+
+    public function canAddEmployee(): bool
+    {
+        return $this->employees()->count() < $this->max_employees;
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(EmployeeProfile::class);
     }
 }

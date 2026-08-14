@@ -152,6 +152,7 @@ class LoginController extends Controller
             'status' => 'active',
             'expires_at' => now()->addMonth(),
             'max_devices' => $plan->max_devices,
+            'max_employees' => $plan->max_employees,
         ]);
 
         $user->update(['tenant_id' => $tenant->id]);

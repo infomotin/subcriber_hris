@@ -51,24 +51,41 @@ class SubscriptionCheckoutController extends Controller
         $tranId = $request->input('tran_id') ?? $request->query('tran_id');
         $valId = $request->input('val_id') ?? 'VAL_' . uniqid();
 
-        $this->sslCommerzService->validatePayment($tranId, [
+        $result = $this->sslCommerzService->validatePayment($tranId, [
             'val_id' => $valId,
             'card_type' => 'SSLCOMMERZ/BKASH',
         ]);
 
-        return redirect()->route('subscriber.dashboard')
-            ->with('success', 'Subscription payment successful! Your quota has been extended.');
+        $paymentLog = PaymentLog::where('tran_id', $tranId)->first();
+
+        return view('subscriber.ssl_result', [
+            'status' => 'success',
+            'message' => 'Subscription payment successful! Your quota has been extended.',
+            'paymentLog' => $paymentLog,
+        ]);
     }
 
     public function fail(Request $request)
     {
-        return redirect()->route('subscriber.plans')
-            ->with('error', 'Payment transaction failed. Please try again.');
+        $tranId = $request->input('tran_id');
+        $paymentLog = $tranId ? PaymentLog::where('tran_id', $tranId)->first() : null;
+
+        return view('subscriber.ssl_result', [
+            'status' => 'fail',
+            'message' => 'Payment transaction failed. Please try again.',
+            'paymentLog' => $paymentLog,
+        ]);
     }
 
     public function cancel(Request $request)
     {
-        return redirect()->route('subscriber.plans')
-            ->with('error', 'Payment transaction was canceled.');
+        $tranId = $request->input('tran_id');
+        $paymentLog = $tranId ? PaymentLog::where('tran_id', $tranId)->first() : null;
+
+        return view('subscriber.ssl_result', [
+            'status' => 'cancel',
+            'message' => 'Payment transaction was canceled.',
+            'paymentLog' => $paymentLog,
+        ]);
     }
 }
