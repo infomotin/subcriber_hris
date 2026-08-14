@@ -11,11 +11,26 @@
 </div>
 
 <div class="card border-0">
-    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-        <span class="fw-bold text-slate-800" style="font-family: 'Poppins', sans-serif;"><i class="bx bx-time me-1 text-primary align-middle font-size-18"></i> Punch Logs Feed</span>
-        <div class="d-flex align-items-center gap-2.5">
-            <span class="badge bg-success font-size-11 px-2.5 py-1.5" id="liveBadge"><i class="bx bx-pulse me-1"></i> Live feed (5s)</span>
-            <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary font-size-12 px-3 py-1.5 rounded-pill">View All Logs</a>
+    <div class="card-header bg-white border-bottom py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <span class="fw-bold text-slate-800" style="font-family: 'Poppins', sans-serif;"><i class="bx bx-time me-1 text-primary align-middle font-size-18"></i> Punch Logs Feed</span>
+            <div class="d-flex align-items-center gap-2.5 flex-wrap">
+                <form method="GET" action="{{ route('subscriber.adms.punch-logs') }}" class="d-flex align-items-center gap-2" id="deviceFilterForm">
+                    <div class="input-group input-group-sm" style="width: 220px;">
+                        <span class="input-group-text bg-light border-end-0"><i class="bx bx-chip text-primary"></i></span>
+                        <select name="device_id" id="deviceFilter" class="form-select form-select-sm bg-light border-start-0 font-size-12" onchange="this.form.submit()">
+                            <option value="">All Devices</option>
+                            @foreach($devices as $device)
+                                <option value="{{ $device->id }}" {{ $selectedDevice == $device->id ? 'selected' : '' }}>
+                                    {{ $device->name }} ({{ $device->serial_number }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+                <span class="badge bg-success font-size-11 px-2.5 py-1.5" id="liveBadge"><i class="bx bx-pulse me-1"></i> Live (5s)</span>
+                <a href="{{ route('subscriber.attendance.index') }}" class="btn btn-sm btn-outline-primary font-size-12 px-3 py-1.5 rounded-pill">View All Logs</a>
+            </div>
         </div>
     </div>
     <div class="card-body p-0">
@@ -55,10 +70,17 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const punchFeed = document.getElementById('livePunchFeed');
-        let lastLogId = {{ $recentLogs->first()?->id ?? 0 }};
+        const deviceFilter = document.getElementById('deviceFilter');
+
+        function getSelectedDevice() {
+            return deviceFilter ? deviceFilter.value : '';
+        }
 
         function fetchLiveStats() {
-            fetch('{{ route("subscriber.dashboard.stats") }}', {
+            const deviceId = getSelectedDevice();
+            const params = deviceId ? '?device_id=' + deviceId : '';
+
+            fetch('{{ route("subscriber.dashboard.stats") }}' + params, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())
@@ -80,6 +102,8 @@
                                 <td><span class="badge bg-soft-secondary text-secondary">${log.verify_type_label}</span></td>
                             </tr>`;
                     });
+                } else {
+                    punchFeed.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">No attendance punches recorded for your organization yet.</td></tr>';
                 }
             })
             .catch(() => {});

@@ -39,10 +39,26 @@ class DashboardController extends Controller
         return view('subscriber.adms.endpoint', $data);
     }
 
-    public function admsPunchLogs()
+    public function admsPunchLogs(Request $request)
     {
         $data = $this->prepareDashboardData();
-        return view('subscriber.adms.punch-logs', $data);
+        $devices = Device::withoutGlobalScopes()->orderBy('name')->get();
+        $selectedDevice = $request->input('device_id');
+
+        $query = AttendanceLog::with(['device', 'zktecoUser'])
+            ->orderBy('punched_at', 'desc');
+
+        if ($selectedDevice) {
+            $query->where('device_id', $selectedDevice);
+        }
+
+        $recentLogs = $query->take(50)->get();
+
+        return view('subscriber.adms.punch-logs', array_merge($data, [
+            'devices' => $devices,
+            'selectedDevice' => $selectedDevice,
+            'recentLogs' => $recentLogs,
+        ]));
     }
 
     public function admsHandshakeTest()
@@ -149,7 +165,7 @@ class DashboardController extends Controller
         );
     }
 
-    public function stats()
+    public function stats(Request $request)
     {
         $user = auth()->user();
         $tenant = $user?->tenant ?? Tenant::first();
@@ -159,11 +175,22 @@ class DashboardController extends Controller
 
         app()->instance('current_tenant_id', $tenant->id);
 
-        $todayPunches = AttendanceLog::whereDate('punched_at', today())->count();
+        $selectedDevice = $request->input('device_id');
 
-        $recentLogs = AttendanceLog::with(['device', 'zktecoUser'])
-            ->orderBy('punched_at', 'desc')
-            ->take(10)
+        $todayQuery = AttendanceLog::whereDate('punched_at', today());
+        if ($selectedDevice) {
+            $todayQuery->where('device_id', $selectedDevice);
+        }
+        $todayPunches = $todayQuery->count();
+
+        $logsQuery = AttendanceLog::with(['device', 'zktecoUser'])
+            ->orderBy('punched_at', 'desc');
+
+        if ($selectedDevice) {
+            $logsQuery->where('device_id', $selectedDevice);
+        }
+
+        $recentLogs = $logsQuery->take(10)
             ->get()
             ->map(fn ($log) => [
                 'id' => $log->id,
