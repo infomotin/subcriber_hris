@@ -39,6 +39,24 @@ class DashboardController extends Controller
         return view('subscriber.adms.endpoint', $data);
     }
 
+    public function regenerateTenantToken()
+    {
+        $user = auth()->user();
+        $tenant = $user?->tenant ?? Tenant::first();
+
+        if (! $tenant) {
+            return response()->json(['success' => false, 'error' => 'No tenant found.'], 404);
+        }
+
+        $newToken = $tenant->regenerateToken();
+
+        return response()->json([
+            'success' => true,
+            'token' => $newToken,
+            'url' => $tenant->admsEndpointUrl(),
+        ]);
+    }
+
     public function admsPunchLogs(Request $request)
     {
         $data = $this->prepareDashboardData();

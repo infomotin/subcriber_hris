@@ -72,7 +72,7 @@
 
                 <div class="input-group" style="max-width: 580px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
                     <span class="input-group-text bg-white border-end-0 text-slate-400 font-size-13"><i class="bx bx-link"></i></span>
-                    <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="http://amds.test/iclock/{{ $tenant->tenant_token }}/cdata" readonly>
+                    <input type="text" class="form-control font-size-13 bg-white border-start-0 border-end-0 fw-semibold text-slate-700 py-2" id="adms-url" value="{{ $tenant->admsEndpointUrl() }}" readonly>
                     <button class="btn btn-primary px-4 fw-bold font-size-13" type="button" id="copy-btn" onclick="copyAdmsUrl()">
                         <i class="bx bx-copy me-1" id="copy-icon"></i> <span id="copy-text">Copy URL</span>
                     </button>

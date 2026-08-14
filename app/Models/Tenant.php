@@ -38,12 +38,39 @@ class Tenant extends Model
 
         static::creating(function ($tenant) {
             if (empty($tenant->tenant_token)) {
-                $tenant->tenant_token = Str::random(16);
+                $tenant->tenant_token = static::generateUniqueToken();
             }
             if (empty($tenant->slug)) {
                 $tenant->slug = Str::slug($tenant->name) . '-' . Str::random(4);
             }
         });
+    }
+
+    /**
+     * Generate a unique, device-friendly (uppercase) tenant token.
+     */
+    public static function generateUniqueToken(int $length = 16): string
+    {
+        do {
+            $token = strtoupper(Str::random($length));
+        } while (static::where('tenant_token', $token)->exists());
+
+        return $token;
+    }
+
+    public function regenerateToken(): string
+    {
+        $this->tenant_token = static::generateUniqueToken();
+        $this->save();
+
+        return $this->tenant_token;
+    }
+
+    public function admsEndpointUrl(): string
+    {
+        $host = request()?->getHttpHost() ?? 'hr.nexogiant.com';
+
+        return 'https://' . $host . '/iclock/' . $this->tenant_token . '/cdata';
     }
 
     public function user(): BelongsTo

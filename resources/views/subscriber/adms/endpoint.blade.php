@@ -17,6 +17,9 @@
     </div>
     <span class="badge bg-primary font-size-12 px-3 py-2 rounded-pill" style="box-shadow: 0 2px 8px rgba(99,102,241,0.3);">
         <i class="bx bx-key me-1"></i> Token: <strong>{{ $tenant->tenant_token }}</strong>
+        <button class="btn btn-sm btn-light ms-2 py-0 px-2 font-size-11" type="button" onclick="regenerateToken()" title="Generate a new unique token">
+            <i class="bx bx-refresh me-1"></i>Regenerate
+        </button>
     </span>
 </div>
 
@@ -326,6 +329,32 @@
         document.getElementById('oldProtocolContent').style.display = type === 'old' ? '' : 'none';
         document.getElementById('newProtocolGuide').style.display = type === 'new' ? '' : 'none';
         document.getElementById('oldProtocolGuide').style.display = type === 'old' ? '' : 'none';
+    }
+
+    function regenerateToken() {
+        if (!confirm('Generate a NEW unique token? All devices using the current token URL must be reconfigured with the new one.')) return;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+        fetch('{{ route("subscriber.adms.regenerate-token") }}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => alert('Request failed: ' + err.message));
     }
 
     function copyAdmsUrl() {
