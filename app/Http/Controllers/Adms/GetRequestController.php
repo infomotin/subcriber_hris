@@ -57,6 +57,13 @@ class GetRequestController extends Controller
 
         $device->markAsOnline();
 
+        // Auto-mark old "sent" commands as executed — device polled again meaning it processed previous commands
+        $device->commands()
+            ->withoutGlobalScopes()
+            ->where('status', 'sent')
+            ->where('updated_at', '<', now()->subSeconds(30))
+            ->update(['status' => 'executed', 'return_code' => 0, 'executed_at' => now()]);
+
         // Retrieve pending commands for this device
         $commands = $device->commands()
             ->withoutGlobalScopes()

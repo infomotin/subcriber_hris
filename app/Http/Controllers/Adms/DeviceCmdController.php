@@ -57,6 +57,14 @@ class DeviceCmdController extends Controller
 
         $device->markAsOnline();
 
+        // Log the raw request for debugging
+        \Illuminate\Support\Facades\Log::info("ADMS devicecmd received", [
+            'sn' => $serialNumber,
+            'device_id' => $device->id,
+            'query' => $request->query(),
+            'body' => $request->getContent(),
+        ]);
+
         // Process device command return payload
         $body = $request->getContent();
         if ($body) {
