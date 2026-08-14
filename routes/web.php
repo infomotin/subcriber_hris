@@ -138,6 +138,8 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         // Subscriber Dedicated Scoped Views & Device Store
         Route::get('/devices', [SubscriberDeviceController::class, 'index'])->name('devices.index');
         Route::post('/devices', [SubscriberDeviceController::class, 'store'])->name('devices.store');
+        Route::put('/devices/{id}', [SubscriberDeviceController::class, 'update'])->name('devices.update');
+        Route::delete('/devices/{id}', [SubscriberDeviceController::class, 'destroy'])->name('devices.destroy');
         Route::get('/devices/{id}/status', [SubscriberDeviceController::class, 'checkStatus'])->name('devices.status');
         Route::get('/attendance', [SubscriberAttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/export', [SubscriberAttendanceController::class, 'export'])->name('attendance.export');

@@ -55,6 +55,38 @@ class DeviceController extends Controller
             ->with('success', "Biometric machine '{$validated['name']}' registered successfully under your quota.");
     }
 
+    public function update(Request $request, $id)
+    {
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $device = Device::where('tenant_id', $tenant->id)->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'serial_number' => 'required|string|max:255|unique:devices,serial_number,' . $device->id,
+            'ip_address' => 'nullable|string|max:45',
+        ]);
+
+        $device->update([
+            'name' => $validated['name'],
+            'serial_number' => strtoupper(trim($validated['serial_number'])),
+            'ip_address' => $validated['ip_address'] ?? null,
+        ]);
+
+        return redirect()->route('subscriber.devices.index')
+            ->with('success', "Biometric machine '{$validated['name']}' updated successfully.");
+    }
+
+    public function destroy($id)
+    {
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $device = Device::where('tenant_id', $tenant->id)->findOrFail($id);
+
+        $device->delete();
+
+        return redirect()->route('subscriber.devices.index')
+            ->with('success', "Biometric machine '{$device->name}' has been deleted (soft-deleted). You can re-register it anytime.");
+    }
+
     public function checkStatus($id)
     {
         $tenant = auth()->user()?->tenant ?? Tenant::first();

@@ -56,9 +56,17 @@
                             <td>{{ $device->user_count }}</td>
                             <td>{{ $device->att_count }}</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary" onclick="checkDevice({{ $device->id }}, '{{ $device->name }}')" title="Test Communication">
-                                    <i class="bx bx-signal-5"></i> Test
-                                </button>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="checkDevice({{ $device->id }}, '{{ $device->name }}')" title="Test Communication">
+                                        <i class="bx bx-signal-5"></i> Test
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="editDevice({{ $device->id }}, '{{ $device->name }}', '{{ $device->serial_number }}', '{{ $device->ip_address ?? '' }}')" title="Edit Device">
+                                        <i class="bx bx-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDevice({{ $device->id }}, '{{ $device->name }}')" title="Delete Device">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -110,6 +118,40 @@
 </div>
 @endif
 
+<!-- Modal: Edit Biometric Machine -->
+<div class="modal fade" id="modalEditDevice" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="" method="POST" id="editDeviceForm" class="modal-content">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bx bx-edit text-primary me-2"></i> Edit Biometric Machine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Machine Name / Location</label>
+                    <input type="text" name="name" id="editName" class="form-control" required placeholder="e.g. Front Gate Terminal">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Machine Serial Number (SN)</label>
+                    <input type="text" name="serial_number" id="editSerial" class="form-control" required placeholder="e.g. ZKT99221100">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Device IP Address (Optional)</label>
+                    <input type="text" name="ip_address" id="editIp" class="form-control" placeholder="e.g. 192.168.1.150">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary px-4"><i class="bx bx-check me-1"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal: Device Status Detail -->
 <div class="modal fade" id="modalDeviceStatus" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -137,6 +179,32 @@
 @push('scripts')
 <script>
 let currentDeviceId = null;
+
+function editDevice(id, name, serial, ip) {
+    document.getElementById('editName').value = name;
+    document.getElementById('editSerial').value = serial;
+    document.getElementById('editIp').value = ip;
+    document.getElementById('editDeviceForm').action = '{{ url('subscriber/devices') }}/' + id;
+    new bootstrap.Modal(document.getElementById('modalEditDevice')).show();
+}
+
+function deleteDevice(id, name) {
+    if (!confirm('Delete biometric machine "' + name + '" permanently from your account?\\n\\nThis will remove it from the device list (soft delete). Its attendance history is kept. You can re-register this serial number later.')) return;
+
+    fetch('{{ url('subscriber/devices') }}/' + id, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+        }
+    })
+    .then(r => {
+        if (r.redirected) { location.href = r.url; return; }
+        return r.json();
+    })
+    .then(data => { if (data && data.redirect) location.href = data.redirect; else location.reload(); })
+    .catch(() => location.reload());
+}
 
 function checkDevice(id, name) {
     currentDeviceId = id;
@@ -219,7 +287,7 @@ function refreshStatus() {
                             <p class="font-size-12 text-muted mb-0">
                                 Last heartbeat was ${d.last_heartbeat_humans}. Ensure the device:<br>
                                 • Has internet/LAN connectivity<br>
-                                • Is configured with correct Server IP <code>15.235.229.40</code> and Port <code>80</code><br>
+                                • Is configured with Server Address <code>hr.nexogiant.com</code>, Port <code>443</code>, HTTPS ON<br>
                                 • Has ADMS Cloud Server enabled in COMM settings<br>
                                 • Can reach this server (check firewall, proxy, DNS)
                             </p>
