@@ -48,7 +48,7 @@ class TenantCDataController extends Controller
             return $this->responseBuilder->error();
         }
 
-        $device->markAsOnline();
+        $device->markAsOnline($request->ip());
 
         // GET request with options=all is device handshake/config
         if ($request->isMethod('GET') && $options === 'all') {

@@ -166,19 +166,86 @@
 </div>
 
 <div class="card border-0 mt-4">
+    <div class="card-body p-4">
+        <h6 class="fw-bold text-slate-800 mb-3"><i class="bx bx-plug text-primary me-1"></i> Device Connection Options — Which One to Use</h6>
+        <p class="font-size-13 text-slate-600 mb-3">All three endpoints below work with the ADMS protocol (heartbeat, commands, attendance push). The difference is only how the device reaches this server:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle font-size-13 mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:26%;">Option</th>
+                        <th style="width:34%;">Device Settings</th>
+                        <th style="width:20%;">Status</th>
+                        <th style="width:20%;">Required Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold"><i class="bx bx-globe text-primary me-1"></i> Domain + HTTPS</td>
+                        <td>
+                            Server Address: <code>hr.nexogiant.com</code><br>
+                            Port: <code>443</code> · HTTPS/SSL: <strong>ON</strong>
+                        </td>
+                        <td><span class="badge bg-success font-size-11">WORKS NOW</span></td>
+                        <td><span class="text-success">None — ready to use</span></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold"><i class="bx bx-globe text-warning me-1"></i> Domain + HTTP</td>
+                        <td>
+                            Server Address: <code>hr.nexogiant.com</code><br>
+                            Port: <code>80</code> · HTTPS/SSL: <strong>OFF</strong>
+                        </td>
+                        <td><span class="badge bg-warning text-dark font-size-11">NEEDS CLOUDFLARE CHANGE</span></td>
+                        <td>Turn OFF <em>Always Use HTTPS</em> and set SSL mode to <em>Flexible</em> in Cloudflare</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold"><i class="bx bx-server text-danger me-1"></i> Direct IP + HTTP</td>
+                        <td>
+                            Server IP: <code>{{ $serverIp }}</code><br>
+                            Port: <code>80</code>
+                        </td>
+                        <td><span class="badge bg-danger font-size-11">NEEDS HOSTING CHANGE</span></td>
+                        <td>cPanel server blocks IP-based requests (suspended page). Ask your host to point the server IP's default vhost at this account</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 mt-4">
     <div class="card-body p-4" style="background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1px solid #fecaca !important;">
-        <h6 class="fw-bold text-red-700 mb-3"><i class="bx bx-error-circle me-1"></i> Important: HTTPS Required</h6>
-        <p class="font-size-13 text-red-600 mb-3">
-            This server is behind <strong>Cloudflare CDN</strong> which enforces HTTPS. All ADMS communication <strong>must use HTTPS</strong>.
-        </p>
+        <h6 class="fw-bold text-red-700 mb-3"><i class="bx bx-error-circle me-1"></i> Why Direct IP &amp; HTTP Port 80 Don't Work Right Now</h6>
         <ul class="font-size-13 text-red-600 mb-3" style="line-height: 2;">
-            <li><strong>Direct IP (http://15.235.229.40)</strong> &mdash; does NOT work. cPanel intercepts requests by IP.</li>
-            <li><strong>HTTP Domain (http://hr.nexogiant.com)</strong> &mdash; Cloudflare redirects to HTTPS automatically.</li>
-            <li><strong>HTTPS Domain (https://hr.nexogiant.com)</strong> &mdash; Works correctly. <strong>Use this.</strong></li>
+            <li><strong>Direct IP (<code>http://{{ $serverIp }}</code>)</strong> — the cPanel web server intercepts IP-based requests and serves a suspended page. Only domain-based requests reach this app.</li>
+            <li><strong>HTTP Domain (<code>http://hr.nexogiant.com</code>)</strong> — Cloudflare is configured with <em>Always Use HTTPS</em>, so port 80 requests are redirected to HTTPS.</li>
+            <li><strong>HTTPS Domain (<code>https://hr.nexogiant.com</code>)</strong> — works correctly right now.</li>
         </ul>
-        <p class="font-size-13 text-red-600 mb-0">
-            <strong>On your ZKTeco device:</strong> Set the server to <code>hr.nexogiant.com</code>, Port <code>443</code>, and enable <strong>HTTPS/SSL</strong> if available.
-            If your device firmware does not support HTTPS, it cannot connect to this server.
+
+        <div class="p-3 rounded-3 mb-3" style="background:#fff; border:1px solid #fecaca;">
+            <span class="fw-bold font-size-13 text-red-700"><i class="bx bx-wrench me-1"></i> To enable HTTP (port 80) — 2-minute Cloudflare fix:</span>
+            <ol class="font-size-13 text-slate-700 mt-2 mb-0" style="line-height: 2;">
+                <li>Log in to <strong>dash.cloudflare.com</strong> and select the <code>nexogiant.com</code> zone.</li>
+                <li>Go to <strong>SSL/TLS → Edge Certificates</strong>.</li>
+                <li>Turn <strong>OFF</strong> "<em>Always Use HTTPS</em>".</li>
+                <li>Go to <strong>SSL/TLS → Overview</strong> and set encryption mode to <strong>Flexible</strong>.</li>
+                <li>Done. Devices can now connect with <strong>Server Address: <code>hr.nexogiant.com</code>, Port: <code>80</code></strong> (no SSL on device).</li>
+            </ol>
+        </div>
+
+        <div class="p-3 rounded-3" style="background:#fff; border:1px solid #fecaca;">
+            <span class="fw-bold font-size-13 text-red-700"><i class="bx bx-server me-1"></i> To enable Direct IP — ask your hosting provider (WHM access required):</span>
+            <p class="font-size-13 text-slate-700 mt-2 mb-0" style="line-height: 2;">
+                In <strong>WHM → "Main IP Address" / "Apache Configuration → Configure PHP and suEXEC"</strong> area, set the
+                <strong>Default Virtual Host</strong> for IP <code>{{ $serverIp }}</code> to serve the document root
+                <code>/home/nexogiant/hr.nexogiant.com</code> (instead of the suspended page). Then devices using
+                <strong>Server IP: <code>{{ $serverIp }}</code>, Port: <code>80</code></strong> will work.
+            </p>
+        </div>
+
+        <p class="font-size-13 text-red-600 mt-3 mb-0">
+            <strong>On your ZKTeco device now:</strong> Set Server Address = <code>hr.nexogiant.com</code>, Port = <code>443</code>, enable <strong>HTTPS/SSL</strong>.
         </p>
     </div>
 </div>

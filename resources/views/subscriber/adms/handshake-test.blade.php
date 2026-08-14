@@ -57,12 +57,12 @@
         <div class="card p-4 h-100">
             <div class="d-flex align-items-center gap-2 mb-3">
                 <span class="badge bg-warning text-dark font-size-10 rounded-pill px-2 py-1">Old / Legacy Protocol</span>
-                <h6 class="fw-bold mb-0">IP-Based Endpoint</h6>
+                <h6 class="fw-bold mb-0">Legacy Endpoint (No Token)</h6>
             </div>
-            <p class="text-muted font-size-12 mb-3">For older ZKTeco devices that only support IP address.</p>
-            <div class="mb-2 font-size-12"><strong>Server IP Address:</strong></div>
-            <code class="d-block p-2 rounded-2 mb-3" style="background:#f1f5f9; font-size:0.85rem;">{{ $serverIp }}</code>
-            <div class="mb-2 font-size-12"><strong>Port:</strong> <code>80</code></div>
+            <p class="text-muted font-size-12 mb-3">Uses serial-number-based resolution. For devices that don't support URL tokens.</p>
+            <div class="mb-2 font-size-12"><strong>Server Address:</strong></div>
+            <code class="d-block p-2 rounded-2 mb-3" style="background:#f1f5f9; font-size:0.85rem;">https://{{ $serverHost }}/iclock/cdata</code>
+            <div class="mb-2 font-size-12"><strong>Port:</strong> <code>443</code> (HTTPS required)</div>
 
             <div class="d-flex flex-wrap gap-2 mb-3">
                 <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="testHandshake('legacy')">
@@ -71,6 +71,10 @@
                 <button class="btn btn-sm btn-outline-success rounded-pill" onclick="sendDemoAttendance('legacy')">
                     <i class="bx bx-send me-1"></i> Send Demo ATTLOG
                 </button>
+            </div>
+
+            <div class="p-2 rounded-2 mb-3 font-size-11" style="background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;">
+                <i class="bx bx-error-circle me-1"></i> Direct IP (<code>{{ $serverIp }}</code>:80) is <strong>blocked</strong> by the hosting server (cPanel suspended page). All devices must use the domain <code>{{ $serverHost }}</code> on port 443.
             </div>
 
             <div class="response-box p-3" id="legacyResponse">
@@ -393,8 +397,15 @@ document.getElementById('realDeviceSelect').addEventListener('change', function(
         .then(d => {
             const status = d.is_online ? '<span style="color:green">ONLINE</span>' : '<span style="color:red">OFFLINE</span>';
             const hb = d.last_heartbeat !== 'Never' ? d.last_heartbeat : 'never';
-            info.innerHTML += ' — Status: ' + status + ' (last heartbeat: ' + hb + ')';
-        });
+            let traffic = '';
+            if (!d.has_real_traffic) {
+                traffic = '<br><span style="color:#b91c1c"><i class="bx bx-error-circle"></i> No real device traffic yet — heartbeats come from server-side tests. Configure the device with <code>' + location.origin + '/iclock/cdata</code> (port 443).</span>';
+            } else {
+                traffic = '<br><span style="color:green"><i class="bx bx-check-circle"></i> Real device detected (last source IP: ' + d.ip_address + ')</span>';
+            }
+            info.innerHTML += ' — Status: ' + status + ' (last heartbeat: ' + hb + ')' + traffic;
+        })
+        .catch(() => {});
     } else {
         info.style.display = 'none';
     }

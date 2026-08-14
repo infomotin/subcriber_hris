@@ -55,7 +55,7 @@ class GetRequestController extends Controller
             return $this->responseBuilder->error();
         }
 
-        $device->markAsOnline();
+        $device->markAsOnline($request->ip());
 
         // Auto-mark old "sent" commands as executed — device polled again meaning it processed previous commands
         $device->commands()

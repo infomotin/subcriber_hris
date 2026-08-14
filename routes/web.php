@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\NetworkSettingController;
 use App\Http\Controllers\Admin\ZktecoUserController;
 use App\Http\Controllers\Adms\DeviceCmdController;
 use App\Http\Controllers\Adms\GetRequestController;
+use App\Http\Controllers\Adms\RegistryController;
 use App\Http\Controllers\Adms\TenantCDataController;
 use App\Http\Controllers\Api\MockRemoteServerController;
 use App\Http\Controllers\Auth\LoginController;
@@ -73,10 +74,12 @@ Route::middleware(['auth'])->group(function () {
 Route::any('/iclock/{token}/cdata', TenantCDataController::class)->name('adms.token.cdata');
 Route::get('/iclock/{token}/getrequest', GetRequestController::class)->name('adms.token.getrequest');
 Route::post('/iclock/{token}/devicecmd', DeviceCmdController::class)->name('adms.token.devicecmd');
+Route::any('/iclock/{token}/registry', RegistryController::class)->name('adms.token.registry');
 
 Route::any('/iclock/cdata', TenantCDataController::class)->name('adms.cdata');
 Route::get('/iclock/getrequest', GetRequestController::class)->name('adms.getrequest');
 Route::post('/iclock/devicecmd', DeviceCmdController::class)->name('adms.devicecmd');
+Route::any('/iclock/registry', RegistryController::class)->name('adms.registry');
 
 /*
 |--------------------------------------------------------------------------

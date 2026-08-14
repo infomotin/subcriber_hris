@@ -73,11 +73,41 @@ class Device extends Model
         return $this->last_heartbeat->diffInSeconds(now()) <= $timeout;
     }
 
-    public function markAsOnline(): void
+    public function markAsOnline(?string $sourceIp = null): void
     {
-        $this->update([
+        $data = [
             'last_heartbeat' => now(),
             'status' => 'online',
-        ]);
+        ];
+
+        if ($sourceIp) {
+            $data['ip_address'] = $sourceIp;
+        }
+
+        $this->update($data);
+    }
+
+    /**
+     * True when the most recent heartbeat came from an actual device
+     * (i.e. not from the server itself / localhost / Cloudflare-only tests).
+     */
+    public function hasRealDeviceTraffic(): bool
+    {
+        $ip = $this->ip_address ?? '';
+
+        if ($ip === '' || $ip === '127.0.0.1' || $ip === '::1') {
+            return false;
+        }
+
+        $serverIp = config('zkteco-adms.server_ip', '');
+        if ($serverIp !== '' && $ip === $serverIp) {
+            return false;
+        }
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            return false;
+        }
+
+        return true;
     }
 }

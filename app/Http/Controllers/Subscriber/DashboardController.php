@@ -152,6 +152,8 @@ class DashboardController extends Controller
             'is_online' => $device->isOnline(),
             'last_heartbeat' => $device->last_heartbeat ? $device->last_heartbeat->diffForHumans() : 'Never',
             'ip_address' => $device->ip_address,
+            'has_real_traffic' => $device->hasRealDeviceTraffic(),
+            'server_ip' => config('zkteco-adms.server_ip', ''),
         ]);
     }
 

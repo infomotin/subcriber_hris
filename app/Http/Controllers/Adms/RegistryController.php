@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Adms;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
-use App\Models\DeviceCommand;
 use App\Models\Tenant;
 use App\Services\AdmsResponseBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class DeviceCmdController extends Controller
+class RegistryController extends Controller
 {
     public function __construct(
         protected AdmsResponseBuilder $responseBuilder
@@ -24,7 +23,7 @@ class DeviceCmdController extends Controller
             return $this->responseBuilder->error();
         }
 
-        // Resolve tenant context
+        // Resolve tenant context (same as GetRequestController)
         $tenant = null;
         if ($token) {
             $tenant = Tenant::where('tenant_token', $token)->first();
@@ -57,49 +56,40 @@ class DeviceCmdController extends Controller
 
         $device->markAsOnline($request->ip());
 
-        // Log the raw request for debugging
-        \Illuminate\Support\Facades\Log::info("ADMS devicecmd received", [
-            'sn' => $serialNumber,
-            'device_id' => $device->id,
-            'ip' => $request->ip(),
-            'query' => $request->query(),
-            'body' => $request->getContent(),
-        ]);
-
-        // Process device command return payload.
-        // Devices may batch multiple confirmations in a single POST body:
-        //   ID=1&Return=0&CMD=DATA
-        //   ID=2&Return=0&CMD=DATA
+        // Newer firmware registers capabilities with a key=value,key=value body
         $body = trim($request->getContent());
+        $updateData = [];
+
         if ($body) {
-            $sections = preg_split('/\r?\n/', $body);
-            foreach ($sections as $section) {
-                $section = trim($section);
-                if ($section === '') {
+            foreach (explode(',', $body) as $pair) {
+                $pair = trim($pair);
+                if (! str_contains($pair, '=')) {
                     continue;
                 }
+                [$key, $value] = explode('=', $pair, 2);
+                $key = trim($key);
+                $value = trim($value);
 
-                $params = [];
-                parse_str($section, $params);
-
-                $commandId = $params['ID'] ?? $params['id'] ?? null;
-                if ($commandId === null) {
-                    continue;
-                }
-
-                $commandId = (int) $commandId;
-                $returnCode = isset($params['Return']) ? (int) $params['Return'] : (isset($params['return']) ? (int) $params['return'] : 0);
-
-                $command = DeviceCommand::withoutGlobalScopes()
-                    ->where('id', $commandId)
-                    ->where('device_id', $device->id)
-                    ->first();
-
-                if ($command) {
-                    $command->markAsExecuted($returnCode, $section);
+                if ($key === 'pushver') {
+                    $updateData['push_version'] = $value;
+                } elseif (in_array($key, ['language', 'FWVersion'], true)) {
+                    $updateData['firmware_version'] = $value;
+                } elseif (in_array($key, ['Firmware', 'Platform', 'SN'], true)) {
+                    $updateData['firmware_version'] = $value;
                 }
             }
         }
+
+        if (! empty($updateData)) {
+            $device->update($updateData);
+        }
+
+        \Illuminate\Support\Facades\Log::info("ADMS registry received", [
+            'sn' => $serialNumber,
+            'device_id' => $device->id,
+            'ip' => $request->ip(),
+            'body' => $body,
+        ]);
 
         return $this->responseBuilder->ok();
     }
