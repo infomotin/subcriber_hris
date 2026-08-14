@@ -71,6 +71,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const punchFeed = document.getElementById('livePunchFeed');
         const deviceFilter = document.getElementById('deviceFilter');
+        const statsUrl = '{{ route("subscriber.dashboard.stats") }}';
 
         function getSelectedDevice() {
             return deviceFilter ? deviceFilter.value : '';
@@ -78,12 +79,21 @@
 
         function fetchLiveStats() {
             const deviceId = getSelectedDevice();
-            const params = deviceId ? '?device_id=' + deviceId : '';
+            const separator = statsUrl.includes('?') ? '&' : '?';
+            const url = deviceId ? statsUrl + separator + 'device_id=' + deviceId : statsUrl;
 
-            fetch('{{ route("subscriber.dashboard.stats") }}' + params, {
-                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            fetch(url, {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
             })
-            .then(r => r.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Not OK');
+                return response.json();
+            })
             .then(data => {
                 if (data.recent_logs && data.recent_logs.length > 0) {
                     punchFeed.innerHTML = '';
@@ -103,12 +113,13 @@
                             </tr>`;
                     });
                 } else {
-                    punchFeed.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">No attendance punches recorded for your organization yet.</td></tr>';
+                    punchFeed.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">No punches recorded yet.</td></tr>';
                 }
             })
-            .catch(() => {});
+            .catch(err => console.error('Live feed error:', err));
         }
 
+        fetchLiveStats();
         setInterval(fetchLiveStats, 5000);
     });
 </script>
