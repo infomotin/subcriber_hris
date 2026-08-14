@@ -160,6 +160,7 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         Route::get('/adms/handshake-test', [SubscriberDashboardController::class, 'admsHandshakeTest'])->name('adms.handshake-test');
         Route::post('/adms/device-command', [SubscriberDashboardController::class, 'sendDeviceCommand'])->name('adms.device-command');
         Route::get('/adms/command-status', [SubscriberDashboardController::class, 'checkCommandStatus'])->name('adms.command-status');
+        Route::get('/adms/device-status', [SubscriberDashboardController::class, 'deviceStatus'])->name('adms.device-status');
 
         // ADMS Listener & Server Configuration
         Route::get('/adms/listener-config', [SubscriberDashboardController::class, 'admsListenerConfig'])->name('adms.listener-config');

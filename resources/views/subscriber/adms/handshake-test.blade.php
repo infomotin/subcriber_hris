@@ -258,17 +258,19 @@ function sendRealCommand(type) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            log('success', 'realDeviceResponse',
-                'Command Queued!\n' +
+            let msg = 'Command Queued!\n' +
                 '  Command ID : #' + data.command_id + '\n' +
                 '  Command    : ' + data.command + '\n' +
                 '  Formatted  : ' + data.formatted + '\n' +
                 '  Type       : ' + data.type + '\n' +
                 '  Status     : ' + data.status + '\n' +
-                '  Device     : ' + data.device + '\n\n' +
-                'The device will receive this command on its next heartbeat poll.\n' +
-                'Poll the command status below to check execution result.'
-            );
+                '  Device     : ' + data.device + '\n' +
+                '  Online     : ' + (data.device_online ? 'YES' : 'NO') + '\n\n' +
+                data.message;
+            if (!data.device_online) {
+                msg += '\n\n⚠ Device is OFFLINE. Command will be delivered when device reconnects.';
+            }
+            log(data.device_online ? 'success' : 'info', 'realDeviceResponse', msg);
             pollCommandStatus(data.command_id, 0);
         } else {
             log('error', 'realDeviceResponse', 'Error: ' + (data.error || 'Unknown error'));
@@ -318,13 +320,16 @@ function deleteRealUser() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            log('success', 'realDeviceResponse',
-                'Delete User Command Queued!\n' +
+            let msg = 'Delete User Command Queued!\n' +
                 '  Command ID : #' + data.command_id + '\n' +
                 '  Command    : ' + data.command + '\n' +
-                '  Device     : ' + data.device + '\n\n' +
-                'User PIN=' + pin + ' will be removed from the device on next heartbeat.'
-            );
+                '  Device     : ' + data.device + '\n' +
+                '  Online     : ' + (data.device_online ? 'YES' : 'NO') + '\n\n' +
+                data.message;
+            if (!data.device_online) {
+                msg += '\n\n⚠ Device is OFFLINE. Command will be delivered when device reconnects.';
+            }
+            log(data.device_online ? 'success' : 'info', 'realDeviceResponse', msg);
             document.getElementById('deletePin').value = '';
             pollCommandStatus(data.command_id, 0);
         } else {
@@ -336,8 +341,8 @@ function deleteRealUser() {
 }
 
 function pollCommandStatus(commandId, attempt) {
-    if (attempt > 30) {
-        log('info', 'realDeviceResponse', 'Stopped polling after 5 minutes. Command may still be pending if the device is offline.');
+    if (attempt > 60) {
+        log('info', 'realDeviceResponse', 'Stopped polling after 10 minutes. Command may still be pending if the device is offline or not responding.');
         return;
     }
 
@@ -362,9 +367,10 @@ function pollCommandStatus(commandId, attempt) {
                     '  Response    : ' + (data.response || 'None')
                 );
             } else {
+                const devStatus = data.device_online ? 'Device ONLINE' : 'Device OFFLINE';
                 log('info', 'realDeviceResponse',
                     'Command #' + data.id + ' status: ' + data.status.toUpperCase() +
-                    ' (waiting for device to pick up... attempt ' + (attempt + 1) + '/30)'
+                    ' (' + devStatus + ', attempt ' + (attempt + 1) + '/60)'
                 );
                 pollCommandStatus(commandId, attempt + 1);
             }
@@ -379,6 +385,16 @@ document.getElementById('realDeviceSelect').addEventListener('change', function(
     if (this.value) {
         info.style.display = 'block';
         info.innerHTML = '<strong>' + opt.dataset.name + '</strong> &mdash; SN: <code>' + opt.dataset.sn + '</code>';
+        fetch('{{ route("subscriber.adms.device-status") }}?device_id=' + this.value, {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(d => {
+            const status = d.is_online ? '<span style="color:green">ONLINE</span>' : '<span style="color:red">OFFLINE</span>';
+            const hb = d.last_heartbeat !== 'Never' ? d.last_heartbeat : 'never';
+            info.innerHTML += ' — Status: ' + status + ' (last heartbeat: ' + hb + ')';
+        });
     } else {
         info.style.display = 'none';
     }

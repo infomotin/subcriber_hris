@@ -114,7 +114,10 @@ class DashboardController extends Controller
             'type' => $cmd->type,
             'status' => $cmd->status,
             'device' => $device->name . ' (' . $device->serial_number . ')',
-            'message' => 'Command queued. Device will receive it on next heartbeat poll.',
+            'device_online' => $device->isOnline(),
+            'message' => $device->isOnline()
+                ? 'Command queued. Device is ONLINE and will receive it shortly.'
+                : 'Command queued. Device is OFFLINE — command will be delivered when device reconnects.',
         ]);
     }
 
@@ -133,6 +136,22 @@ class DashboardController extends Controller
             'response' => $cmd->response,
             'executed_at' => $cmd->executed_at ? $cmd->executed_at->toDateTimeString() : null,
             'device' => $cmd->device->name ?? 'Unknown',
+            'device_online' => $cmd->device ? $cmd->device->isOnline() : false,
+        ]);
+    }
+
+    public function deviceStatus(Request $request)
+    {
+        $request->validate(['device_id' => 'required|exists:devices,id']);
+        $device = Device::withoutGlobalScopes()->findOrFail($request->device_id);
+
+        return response()->json([
+            'id' => $device->id,
+            'name' => $device->name,
+            'serial_number' => $device->serial_number,
+            'is_online' => $device->isOnline(),
+            'last_heartbeat' => $device->last_heartbeat ? $device->last_heartbeat->diffForHumans() : 'Never',
+            'ip_address' => $device->ip_address,
         ]);
     }
 

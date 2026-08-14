@@ -61,7 +61,7 @@ class GetRequestController extends Controller
         $device->commands()
             ->withoutGlobalScopes()
             ->where('status', 'sent')
-            ->where('updated_at', '<', now()->subSeconds(30))
+            ->where('updated_at', '<', now()->subSeconds(10))
             ->update(['status' => 'executed', 'return_code' => 0, 'executed_at' => now()]);
 
         // Retrieve pending commands for this device
