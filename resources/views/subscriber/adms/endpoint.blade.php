@@ -96,11 +96,12 @@
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <div>
                     <h6 class="fw-bold text-slate-800 mb-2" style="font-family: 'Poppins', sans-serif; font-size: 0.95rem;">
-                        <i class="bx bx-server me-2 text-warning font-size-20 align-middle"></i> Old / Legacy Protocol &mdash; IP-Based Endpoint
+                        <i class="bx bx-server me-2 text-warning font-size-20 align-middle"></i> Old / Legacy Protocol &mdash; Serial-Number-Based Endpoint
                     </h6>
                     <p class="mb-2 text-slate-600 font-size-13">
-                        For older ZKTeco devices that <strong>only support IP address</strong> (not domain names) in ADMS settings.
+                        For devices that <strong>don't support URL tokens</strong> in ADMS settings.
                         Uses standard tab-delimited push with <code>table=ATTLOG</code> / <code>table=OPERLOG</code>.
+                        Device is identified automatically by its serial number.
                     </p>
 
                     <div class="mb-3 p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
@@ -303,7 +304,7 @@
                     <span class="badge bg-warning text-dark font-size-10 rounded-pill px-2 py-1 mb-2">Old / Legacy Protocol</span>
                     <p class="font-size-12 text-slate-600 mb-0">
                         Standard tab-delimited ADMS push with <code>table=ATTLOG</code> / <code>table=OPERLOG</code> required. 
-                        IP-based server address only. Use for older ZKTeco firmware.
+                        No URL token needed (serial-number-based). Use <code>{{ $serverHost }}</code> on port 443 with HTTPS.
                     </p>
                 </div>
             </div>
