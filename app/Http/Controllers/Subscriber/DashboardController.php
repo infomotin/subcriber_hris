@@ -66,7 +66,74 @@ class DashboardController extends Controller
         $data = $this->prepareDashboardData();
         $data['serverIp'] = env('ADMS_SERVER_IP', '15.235.229.40');
         $data['serverHost'] = request()->getHttpHost();
+        $data['devices'] = Device::withoutGlobalScopes()->orderBy('name')->get();
         return view('subscriber.adms.handshake-test', $data);
+    }
+
+    public function sendDeviceCommand(Request $request)
+    {
+        $request->validate([
+            'device_id' => 'required|exists:devices,id',
+            'command' => 'required|in:info,reboot,clear_log,get_users,delete_user',
+            'pin' => 'nullable|string|max:20',
+        ]);
+
+        $device = Device::withoutGlobalScopes()->findOrFail($request->device_id);
+        $cmdBuilder = app(\App\Services\DeviceCommandBuilder::class);
+
+        switch ($request->command) {
+            case 'info':
+                $cmd = $cmdBuilder->info($device);
+                break;
+            case 'reboot':
+                $cmd = $cmdBuilder->reboot($device);
+                break;
+            case 'clear_log':
+                $cmd = $cmdBuilder->clearAttendanceLogs($device);
+                break;
+            case 'get_users':
+                $cmd = $device->commands()->create([
+                    'command' => 'DATA QUERY USERINFO',
+                    'type' => 'GET_USERS',
+                    'status' => 'pending',
+                ]);
+                break;
+            case 'delete_user':
+                if (! $request->pin) {
+                    return response()->json(['error' => 'PIN is required to delete a user.'], 422);
+                }
+                $cmd = $cmdBuilder->deleteUser($device, $request->pin);
+                break;
+        }
+
+        return response()->json([
+            'success' => true,
+            'command_id' => $cmd->id,
+            'command' => $cmd->command,
+            'formatted' => $cmd->formatted_command,
+            'type' => $cmd->type,
+            'status' => $cmd->status,
+            'device' => $device->name . ' (' . $device->serial_number . ')',
+            'message' => 'Command queued. Device will receive it on next heartbeat poll.',
+        ]);
+    }
+
+    public function checkCommandStatus(Request $request)
+    {
+        $request->validate(['command_id' => 'required|exists:device_commands,id']);
+
+        $cmd = \App\Models\DeviceCommand::withoutGlobalScopes()->with('device')->findOrFail($request->command_id);
+
+        return response()->json([
+            'id' => $cmd->id,
+            'command' => $cmd->command,
+            'type' => $cmd->type,
+            'status' => $cmd->status,
+            'return_code' => $cmd->return_code,
+            'response' => $cmd->response,
+            'executed_at' => $cmd->executed_at ? $cmd->executed_at->toDateTimeString() : null,
+            'device' => $cmd->device->name ?? 'Unknown',
+        ]);
     }
 
     /**

@@ -158,6 +158,8 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         Route::get('/adms/endpoint', [SubscriberDashboardController::class, 'admsEndpoint'])->name('adms.endpoint');
         Route::get('/adms/punch-logs', [SubscriberDashboardController::class, 'admsPunchLogs'])->name('adms.punch-logs');
         Route::get('/adms/handshake-test', [SubscriberDashboardController::class, 'admsHandshakeTest'])->name('adms.handshake-test');
+        Route::post('/adms/device-command', [SubscriberDashboardController::class, 'sendDeviceCommand'])->name('adms.device-command');
+        Route::get('/adms/command-status', [SubscriberDashboardController::class, 'checkCommandStatus'])->name('adms.command-status');
 
         // ADMS Listener & Server Configuration
         Route::get('/adms/listener-config', [SubscriberDashboardController::class, 'admsListenerConfig'])->name('adms.listener-config');
