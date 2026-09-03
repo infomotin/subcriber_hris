@@ -17,7 +17,7 @@ class RoleController extends Controller
 
         $query = Role::with('permissions');
         if (Role::hasTenantColumn()) {
-            $query->forTenant($tenant->id);
+            $query->where('tenant_id', $tenant->id);
         }
 
         $roles = $query->orderBy('name')->paginate(15);

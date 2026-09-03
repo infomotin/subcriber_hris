@@ -15,7 +15,7 @@ class PermissionController extends Controller
 
         $query = Role::query();
         if (Role::hasTenantColumn()) {
-            $query->forTenant($tenant->id);
+            $query->where('tenant_id', $tenant->id);
         }
         $roles = $query->orderBy('name')->get();
 

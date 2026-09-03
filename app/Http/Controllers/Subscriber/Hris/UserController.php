@@ -40,7 +40,7 @@ class UserController extends Controller
             return back()->with('error', 'No tenant found.');
         }
 
-        $roles = Role::forTenant($tenant->id)->orderBy('name')->get();
+        $roles = Role::where('tenant_id', $tenant->id)->orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
         $employees = EmployeeProfile::with(['user', 'department', 'designation'])
             ->where('tenant_id', $tenant->id)
@@ -128,7 +128,7 @@ class UserController extends Controller
                 ->with('error', 'User not found in your tenant.');
         }
 
-        $roles = Role::forTenant($tenant->id)->orderBy('name')->get();
+        $roles = Role::where('tenant_id', $tenant->id)->orderBy('name')->get();
         $userRoles = $user->getRoleNames()->toArray();
         return view('subscriber.hris.users.edit', compact('user', 'roles', 'userRoles'));
     }
