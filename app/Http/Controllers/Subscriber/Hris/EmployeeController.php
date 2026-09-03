@@ -16,6 +16,7 @@ use App\Models\SalaryRelation;
 use App\Models\WorkShift;
 use App\Models\EmployeeExperience;
 use App\Models\EmployeeDocument;
+use App\Models\EmployeeDraft;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -411,6 +412,73 @@ class EmployeeController extends Controller
         });
 
         return redirect()->route('subscriber.hris.employees.index')->with('success', 'Employee created successfully.');
+    }
+
+    public function saveDraft(Request $request)
+    {
+        $tenant = auth()->user()?->tenant ?? null;
+        if (!$tenant) {
+            return response()->json(['error' => 'No tenant found.'], 403);
+        }
+
+        $validated = $request->validate([
+            'form_token' => 'required|string|max:64',
+            'step' => 'required|integer|min:1|max:5',
+            'step_data' => 'required|array',
+        ]);
+
+        $draft = EmployeeDraft::updateOrCreate(
+            [
+                'tenant_id' => $tenant->id,
+                'user_id' => auth()->id(),
+                'form_token' => $validated['form_token'],
+                'step' => $validated['step'],
+            ],
+            [
+                'step_data' => $validated['step_data'],
+            ]
+        );
+
+        return response()->json(['success' => true, 'draft_id' => $draft->id]);
+    }
+
+    public function loadDraft(Request $request)
+    {
+        $tenant = auth()->user()?->tenant ?? null;
+        if (!$tenant) {
+            return response()->json(['error' => 'No tenant found.'], 403);
+        }
+
+        $formToken = $request->query('form_token');
+        if (!$formToken) {
+            return response()->json(['drafts' => []]);
+        }
+
+        $drafts = EmployeeDraft::where('tenant_id', $tenant->id)
+            ->where('user_id', auth()->id())
+            ->where('form_token', $formToken)
+            ->get()
+            ->pluck('step_data', 'step');
+
+        return response()->json(['drafts' => $drafts]);
+    }
+
+    public function clearDraft(Request $request)
+    {
+        $tenant = auth()->user()?->tenant ?? null;
+        if (!$tenant) {
+            return response()->json(['error' => 'No tenant found.'], 403);
+        }
+
+        $formToken = $request->query('form_token');
+        if ($formToken) {
+            EmployeeDraft::where('tenant_id', $tenant->id)
+                ->where('user_id', auth()->id())
+                ->where('form_token', $formToken)
+                ->delete();
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function show(EmployeeProfile $employee)

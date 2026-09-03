@@ -186,6 +186,9 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('designations', Hris\DesignationController::class);
             Route::resource('shifts', Hris\ShiftController::class);
             Route::resource('employees', Hris\EmployeeController::class);
+            Route::post('employees/draft/save', [Hris\EmployeeController::class, 'saveDraft'])->name('employees.draft.save');
+            Route::get('employees/draft/load', [Hris\EmployeeController::class, 'loadDraft'])->name('employees.draft.load');
+            Route::delete('employees/draft/clear', [Hris\EmployeeController::class, 'clearDraft'])->name('employees.draft.clear');
             Route::resource('kpis', Hris\KpiController::class);
             Route::get('leaves/apply', [Hris\LeaveController::class, 'apply'])->name('leaves.apply');
             Route::get('leaves/balance', [Hris\LeaveController::class, 'getBalance'])->name('leaves.balance');
