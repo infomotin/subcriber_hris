@@ -35,6 +35,46 @@
         #vertical-menu .sidebar-menu li a:hover {{ $sidebarStyle === 'light' ? 'background: #f1f5f9 !important; color: #0f172a !important;' : '' }}
         .badge.bg-primary, .btn-primary, .text-primary { color: {{ $primaryColor }} !important; }
         .bg-primary { background-color: {{ $primaryColor }} !important; }
+
+        /* Global Compact Design System */
+        .content-body { padding: 0.75rem 1.25rem; }
+        .content-body > .d-flex { margin-bottom: 0.5rem !important; }
+        .content-body h4 { font-size: 0.9rem; margin-bottom: 0.1rem; }
+        .content-body h5 { font-size: 0.85rem; margin-bottom: 0.1rem; }
+        .content-body p.text-muted { font-size: 0.7rem; margin-bottom: 0.2rem; }
+        .content-body .card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 0.75rem; }
+        .content-body .card-header { padding: 0.4rem 0.75rem; background: #fff; border-bottom: 1px solid #f1f5f9; }
+        .content-body .card-header h5, .content-body .card-header h6 { font-size: 0.8rem; margin: 0; }
+        .content-body .card-body { padding: 0.5rem 0.75rem; }
+        .content-body .table { font-size: 0.72rem; }
+        .content-body .table thead th { padding: 0.35rem 0.5rem; font-size: 0.68rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        .content-body .table tbody td { padding: 0.3rem 0.5rem; vertical-align: middle; border-bottom: 1px solid #f8fafc; }
+        .content-body .table tbody tr:hover { background-color: #f8fafc; }
+        .content-body .badge { font-size: 0.6rem; padding: 0.2em 0.45em; }
+        .content-body .btn-sm { font-size: 0.68rem; padding: 0.15rem 0.4rem; }
+        .content-body .form-control, .content-body .form-select { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+        .content-body .form-label { font-size: 0.7rem; margin-bottom: 0.15rem; }
+        .content-body .mb-3 { margin-bottom: 0.5rem !important; }
+        .content-body .mb-4 { margin-bottom: 0.6rem !important; }
+        .content-body .mb-2 { margin-bottom: 0.35rem !important; }
+        .content-body .py-3 { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+        .content-body .px-3 { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+        .content-body .g-3, .content-body .g-4 { --bs-gutter-x: 0.5rem; --bs-gutter-y: 0.5rem; }
+        .content-body .row.g-3 > [class*="col-"] { padding-left: calc(var(--bs-gutter-x) * 0.5); padding-right: calc(var(--bs-gutter-x) * 0.5); }
+        .content-body .alert { padding: 0.4rem 0.75rem; font-size: 0.72rem; margin-bottom: 0.5rem; }
+        .content-body .pagination { margin-top: 0.5rem; }
+        .content-body .page-link { padding: 0.2rem 0.5rem; font-size: 0.7rem; }
+        .content-body code { font-size: 0.65rem; }
+        .content-body .avatar-circle { width: 28px; height: 28px; font-size: 0.55rem; }
+        .content-body .modal-header { padding: 0.5rem 0.75rem; }
+        .content-body .modal-body { padding: 0.5rem 0.75rem; }
+        .content-body .modal-footer { padding: 0.4rem 0.75rem; }
+        .content-body .modal-title { font-size: 0.85rem; }
+        .content-body .dropdown-menu { font-size: 0.72rem; }
+        .content-body .dropdown-item { padding: 0.3rem 0.75rem; font-size: 0.72rem; }
+        .content-body .form-check { margin-bottom: 0.3rem; }
+        .content-body .form-check-label { font-size: 0.72rem; }
+        .content-body pre { font-size: 0.65rem; padding: 0.5rem; }
     </style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

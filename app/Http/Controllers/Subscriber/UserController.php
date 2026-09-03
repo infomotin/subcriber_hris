@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $tenant = auth()->user()?->tenant ?? Tenant::first();
         if ($tenant) {
@@ -17,7 +17,18 @@ class UserController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $users = ZktecoUser::with('device')->orderBy('id', 'desc')->paginate(15);
+        $query = ZktecoUser::with('device');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('pin', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('card_number', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(15);
         return view('subscriber.users.index', compact('users'));
     }
 }

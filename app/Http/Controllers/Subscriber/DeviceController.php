@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $tenant = auth()->user()?->tenant ?? Tenant::first();
         if ($tenant) {
@@ -17,7 +17,18 @@ class DeviceController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $devices = Device::orderBy('id', 'desc')->paginate(15);
+        $query = Device::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('serial_number', 'like', "%{$search}%")
+                  ->orWhere('ip_address', 'like', "%{$search}%");
+            });
+        }
+
+        $devices = $query->orderBy('id', 'desc')->paginate(15);
         return view('subscriber.devices.index', compact('devices', 'tenant'));
     }
 
