@@ -370,7 +370,7 @@
                             </div>
                             <div class="col-md-6 mb-2">
                                 <label class="form-label">Religion</label>
-                                <select class="form-select" name="religion">
+                                <select class="form-select" id="ew-religion" name="religion">
                                     <option value="">Select</option>
                                     @foreach(['Islam','Hinduism','Christianity','Buddhism','Other'] as $r)
                                         <option value="{{ $r }}" {{ old('religion') === $r ? 'selected' : '' }}>{{ $r }}</option>
@@ -969,70 +969,91 @@
     }
 
     // --- Address Cascading ---
-    const divisionsData = @json($divisions);
-    const divSel = document.getElementById('ew-division');
-    const distSel = document.getElementById('ew-district');
-    const thanaSel = document.getElementById('ew-thana');
-    const stateIn = document.getElementById('ew-state');
-    const cityIn = document.getElementById('ew-city');
+    var divisionsData = {!! json_encode($divisions->map(fn($d) => [
+        'id' => $d->id,
+        'name' => $d->name,
+        'districts' => $d->districts->map(fn($dist) => [
+            'id' => $dist->id,
+            'name' => $dist->name,
+            'thanas' => $dist->thanas->map(fn($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+            ])->values(),
+        ])->values(),
+    ])->values()) !!};
+    var divSel = document.getElementById('ew-division');
+    var distSel = document.getElementById('ew-district');
+    var thanaSel = document.getElementById('ew-thana');
+    var stateIn = document.getElementById('ew-state');
+    var cityIn = document.getElementById('ew-city');
 
-    divSel.addEventListener('change', function() {
-        const id = this.value;
-        const opt = this.options[this.selectedIndex];
-        stateIn.value = opt ? opt.getAttribute('data-name') : '';
-        distSel.innerHTML = '<option value="">Select</option>';
-        distSel.disabled = true;
-        thanaSel.innerHTML = '<option value="">Select</option>';
-        thanaSel.disabled = true;
-        cityIn.value = '';
-        if (!id) return;
-        const div = divisionsData.find(d => d.id == id);
-        if (div && div.districts) {
-            div.districts.forEach(d => {
-                const o = document.createElement('option');
-                o.value = d.id; o.textContent = d.name; o.setAttribute('data-name', d.name);
-                distSel.appendChild(o);
-            });
-            distSel.disabled = false;
-        }
-    });
-
-    distSel.addEventListener('change', function() {
-        const id = this.value;
-        thanaSel.innerHTML = '<option value="">Select</option>';
-        thanaSel.disabled = true;
-        cityIn.value = '';
-        if (!id) return;
-        const div = divisionsData.find(d => d.id == divSel.value);
-        if (div) {
-            const dist = div.districts.find(d => d.id == id);
-            if (dist && dist.thanas) {
-                dist.thanas.forEach(t => {
-                    const o = document.createElement('option');
-                    o.value = t.id; o.textContent = t.name; o.setAttribute('data-name', t.name);
-                    thanaSel.appendChild(o);
+    if (divSel && distSel && thanaSel) {
+        divSel.addEventListener('change', function() {
+            var id = this.value;
+            var opt = this.options[this.selectedIndex];
+            stateIn.value = opt && opt.value ? opt.getAttribute('data-name') : '';
+            distSel.innerHTML = '<option value="">Select District</option>';
+            distSel.disabled = true;
+            thanaSel.innerHTML = '<option value="">Select Thana</option>';
+            thanaSel.disabled = true;
+            cityIn.value = '';
+            if (!id) return;
+            var div = divisionsData.find(function(d) { return d.id == id; });
+            if (div && div.districts && div.districts.length) {
+                div.districts.forEach(function(d) {
+                    var o = document.createElement('option');
+                    o.value = d.id;
+                    o.textContent = d.name;
+                    o.setAttribute('data-name', d.name);
+                    distSel.appendChild(o);
                 });
-                thanaSel.disabled = false;
+                distSel.disabled = false;
             }
-        }
-    });
+        });
 
-    thanaSel.addEventListener('change', function() {
-        const tName = this.options[this.selectedIndex]?.getAttribute('data-name') || '';
-        const dName = distSel.options[distSel.selectedIndex]?.getAttribute('data-name') || '';
-        cityIn.value = (tName && dName) ? tName + ', ' + dName : '';
-    });
+        distSel.addEventListener('change', function() {
+            var id = this.value;
+            thanaSel.innerHTML = '<option value="">Select Thana</option>';
+            thanaSel.disabled = true;
+            cityIn.value = '';
+            if (!id) return;
+            var div = divisionsData.find(function(d) { return d.id == divSel.value; });
+            if (div) {
+                var dist = div.districts.find(function(d) { return d.id == id; });
+                if (dist && dist.thanas && dist.thanas.length) {
+                    dist.thanas.forEach(function(t) {
+                        var o = document.createElement('option');
+                        o.value = t.id;
+                        o.textContent = t.name;
+                        o.setAttribute('data-name', t.name);
+                        thanaSel.appendChild(o);
+                    });
+                    thanaSel.disabled = false;
+                }
+            }
+        });
+
+        thanaSel.addEventListener('change', function() {
+            var tName = this.options[this.selectedIndex] ? this.options[this.selectedIndex].getAttribute('data-name') : '';
+            var dName = distSel.options[distSel.selectedIndex] ? distSel.options[distSel.selectedIndex].getAttribute('data-name') : '';
+            cityIn.value = (tName && dName) ? tName + ', ' + dName : (tName || dName || '');
+        });
+    }
 
     // --- Salary Auto-calc ---
-    const activeSR = @json($activeSalaryRelation);
-    const grossIn = document.getElementById('ew-gross');
-    if (activeSR) {
+    var activeSR = {!! json_encode($activeSalaryRelation) !!};
+    var grossIn = document.getElementById('ew-gross');
+    if (activeSR && grossIn) {
         grossIn.addEventListener('input', function() {
-            const g = parseFloat(this.value) || 0;
-            document.getElementById('ew-basic').value = (g * activeSR.basic_percent / 100).toFixed(2);
-            document.getElementById('ew-house').value = (g * activeSR.house_rent_percent / 100).toFixed(2);
-            document.getElementById('ew-medical').value = (g * activeSR.medical_percent / 100).toFixed(2);
-            document.getElementById('ew-tada').value = (g * activeSR.tada_percent / 100).toFixed(2);
+            var g = parseFloat(this.value) || 0;
+            var b = document.getElementById('ew-basic');
+            var h = document.getElementById('ew-house');
+            var m = document.getElementById('ew-medical');
+            var t = document.getElementById('ew-tada');
+            if (b) b.value = (g * activeSR.basic_percent / 100).toFixed(2);
+            if (h) h.value = (g * activeSR.house_rent_percent / 100).toFixed(2);
+            if (m) m.value = (g * activeSR.medical_percent / 100).toFixed(2);
+            if (t) t.value = (g * activeSR.tada_percent / 100).toFixed(2);
         });
     }
 
