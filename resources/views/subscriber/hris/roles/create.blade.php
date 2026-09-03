@@ -3,60 +3,69 @@
 @section('title', 'Create Role')
 
 @section('content')
-<div class="page-title-box d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-        <span class="text-primary fw-bold text-uppercase font-size-10 tracking-wider d-block mb-1">Roles & Permissions</span>
-        <h4 style="font-family:'Poppins',sans-serif;font-weight:700;color:#0f172a;">
-            <i class="bx bx-plus-circle text-primary me-1.5 align-middle font-size-26"></i>Create New Role
-        </h4>
+        <h4 class="fw-bold mb-0"><i class="bx bx-plus-circle text-primary me-2"></i> Create Role</h4>
+        <p class="text-muted font-size-13 mb-0">Create a new role with specific permissions.</p>
     </div>
-    <a href="{{ route('subscriber.hris.roles.index') }}" class="btn btn-outline-secondary rounded-pill px-4" style="height:40px;font-size:0.85rem;">
+    <a href="{{ route('subscriber.hris.roles.index') }}" class="btn btn-outline-secondary btn-sm">
         <i class="bx bx-arrow-back me-1"></i> Back
     </a>
 </div>
 
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #fff1f2 !important; border-left: 4px solid #f43f5e !important; color: #9f1239 !important; border-radius: 8px !important;">
+        <i class="bx bx-error-circle me-2 font-size-18 align-middle"></i>
+        @foreach($errors->all() as $error)
+            <div>{{ $error }}</div>
+        @endforeach
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <form method="POST" action="{{ route('subscriber.hris.roles.store') }}">
     @csrf
-    <div class="row g-4">
+    <div class="row g-3">
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm" style="border-radius:14px;">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-slate-800 mb-3" style="font-family:'Poppins',sans-serif;">
-                        <i class="bx bx-info-circle text-primary me-1.5"></i> Role Info
-                    </h6>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-2 px-3">
+                    <h6 class="fw-bold mb-0"><i class="bx bx-info-circle text-primary me-2"></i> Role Info</h6>
+                </div>
+                <div class="card-body p-3">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-slate-700">Role Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="e.g. HR Manager" required>
+                        <label class="form-label fw-bold font-size-13">Role Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="e.g. HR Manager" required>
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="text-end pt-3 border-top">
-                        <a href="{{ route('subscriber.hris.roles.index') }}" class="btn btn-light rounded-pill px-4 me-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5">Create Role</button>
+                    <div class="text-end pt-2 border-top">
+                        <a href="{{ route('subscriber.hris.roles.index') }}" class="btn btn-light btn-sm me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Create</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm" style="border-radius:14px;">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-slate-800 mb-3" style="font-family:'Poppins',sans-serif;">
-                        <i class="bx bx-lock text-primary me-1.5"></i> Assign Permissions
-                    </h6>
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 font-size-11" onclick="toggleAll(true)">Select All</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 font-size-11" onclick="toggleAll(false)">Deselect All</button>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-2 px-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0"><i class="bx bx-check-shield text-primary me-2"></i> Assign Permissions</h6>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleAll(true)">Select All</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAll(false)">Deselect All</button>
                     </div>
+                </div>
+                <div class="card-body p-3" style="max-height: 500px; overflow-y: auto;">
                     @foreach($permissions as $group => $perms)
                         <div class="mb-3">
-                            <div class="fw-bold text-slate-700 font-size-12 text-uppercase mb-2" style="letter-spacing:0.04em;">
+                            <div class="fw-bold text-muted font-size-11 text-uppercase mb-2" style="letter-spacing:0.04em;">
                                 <i class="bx bx-folder me-1"></i> {{ $group ?? 'General' }}
+                                <span class="badge bg-light text-muted ms-1 font-size-10">{{ $perms->count() }}</span>
                             </div>
-                            <div class="row g-2">
+                            <div class="row g-1">
                                 @foreach($perms as $perm)
                                     <div class="col-md-4 col-sm-6">
-                                        <div class="form-check">
+                                        <div class="form-check form-check-sm">
                                             <input class="form-check-input perm-check" type="checkbox" name="permissions[]" value="{{ $perm->name }}" id="perm_{{ $perm->id }}" {{ in_array($perm->name, old('permissions', [])) ? 'checked' : '' }}>
-                                            <label class="form-check-label font-size-12" for="perm_{{ $perm->id }}">{{ $perm->name }}</label>
+                                            <label class="form-check-label font-size-11" for="perm_{{ $perm->id }}">{{ $perm->name }}</label>
                                         </div>
                                     </div>
                                 @endforeach

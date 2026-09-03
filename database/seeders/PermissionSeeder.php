@@ -4,13 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $groups = [
@@ -61,11 +60,17 @@ class PermissionSeeder extends Seeder
             }
         }
 
-        // Create default roles
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        // System roles (tenant_id = 0, shared globally)
+        $admin = Role::firstOrCreate(
+            ['name' => 'admin', 'guard_name' => 'web'],
+            ['tenant_id' => 0]
+        );
         $admin->syncPermissions(Permission::all());
 
-        $hrManager = Role::firstOrCreate(['name' => 'hr-manager', 'guard_name' => 'web']);
+        $hrManager = Role::firstOrCreate(
+            ['name' => 'hr-manager', 'guard_name' => 'web'],
+            ['tenant_id' => 0]
+        );
         $hrManager->syncPermissions([
             'employees.view', 'employees.create', 'employees.edit',
             'departments.view',
@@ -78,7 +83,10 @@ class PermissionSeeder extends Seeder
             'reports.view', 'reports.export',
         ]);
 
-        $employee = Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
+        $employee = Role::firstOrCreate(
+            ['name' => 'employee', 'guard_name' => 'web'],
+            ['tenant_id' => 0]
+        );
         $employee->syncPermissions([
             'employees.view',
             'leaves.view', 'leaves.apply',

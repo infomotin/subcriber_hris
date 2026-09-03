@@ -14,7 +14,10 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $tenant = auth()->user()->tenant;
+        if (!$tenant) {
+            return back()->with('error', 'No tenant found.');
+        }
 
         $query = User::with('roles')->where('tenant_id', $tenant->id);
 
@@ -32,10 +35,13 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
-        $departments = Department::orderBy('name')->get();
+        $tenant = auth()->user()->tenant;
+        if (!$tenant) {
+            return back()->with('error', 'No tenant found.');
+        }
 
-        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $roles = Role::forTenant($tenant->id)->orderBy('name')->get();
+        $departments = Department::orderBy('name')->get();
         $employees = EmployeeProfile::with(['user', 'department', 'designation'])
             ->where('tenant_id', $tenant->id)
             ->orderBy('id', 'desc')
@@ -49,7 +55,8 @@ class UserController extends Controller
         $employeeId = $request->get('employee_profile_id');
         if (!$employeeId) return response()->json(null);
 
-        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $tenant = auth()->user()->tenant;
+        if (!$tenant) return response()->json(null);
 
         $emp = EmployeeProfile::with(['user', 'department', 'designation'])
             ->where('tenant_id', $tenant->id)
@@ -74,7 +81,10 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $tenant = auth()->user()->tenant;
+        if (!$tenant) {
+            return back()->with('error', 'No tenant found.');
+        }
 
         $validated = $request->validate([
             'employee_profile_id' => 'required|exists:employee_profiles,id',
@@ -112,7 +122,13 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
+        $tenant = auth()->user()->tenant;
+        if (!$tenant || $user->tenant_id !== $tenant->id) {
+            return redirect()->route('subscriber.hris.users.index')
+                ->with('error', 'User not found in your tenant.');
+        }
+
+        $roles = Role::forTenant($tenant->id)->orderBy('name')->get();
         $userRoles = $user->getRoleNames()->toArray();
         return view('subscriber.hris.users.edit', compact('user', 'roles', 'userRoles'));
     }
@@ -148,6 +164,11 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $tenant = auth()->user()->tenant;
+        if (!$tenant || $user->tenant_id !== $tenant->id) {
+            return redirect()->back()->with('error', 'User not found in your tenant.');
+        }
+
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
         }

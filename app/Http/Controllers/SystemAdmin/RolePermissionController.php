@@ -5,7 +5,7 @@ namespace App\Http\Controllers\SystemAdmin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class RolePermissionController extends Controller
 {
@@ -44,7 +44,7 @@ class RolePermissionController extends Controller
             'permissions.*' => 'exists:permissions,name',
         ]);
 
-        $role = Role::create(['name' => $validated['name']]);
+        $role = Role::create(['name' => $validated['name'], 'tenant_id' => 0]);
 
         if (! empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);

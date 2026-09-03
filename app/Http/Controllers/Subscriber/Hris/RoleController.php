@@ -3,15 +3,23 @@
 namespace App\Http\Controllers\Subscriber\Hris;
 
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
+    private array $systemRoles = ['admin', 'hr-manager', 'employee'];
+
     public function index()
     {
-        $roles = Role::with('permissions')->orderBy('name')->paginate(15);
+        $tenant = auth()->user()->tenant;
+        $roles = Role::forTenant($tenant->id)
+            ->with('permissions')
+            ->orderBy('tenant_id')
+            ->orderBy('name')
+            ->paginate(15);
+
         return view('subscriber.hris.roles.index', compact('roles'));
     }
 
@@ -23,12 +31,34 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        $tenant = auth()->user()->tenant;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:roles,name',
+            'name' => 'required|string|max:100',
             'permissions' => 'nullable|array',
         ]);
 
-        $role = Role::create(['name' => $validated['name']]);
+        $name = $validated['name'];
+
+        // Prevent creating roles with system names
+        if (in_array(strtolower($name), $this->systemRoles)) {
+            return back()->withErrors(['name' => 'Cannot create a role with a system-reserved name.'])->withInput();
+        }
+
+        // Check uniqueness per tenant
+        $exists = Role::where('tenant_id', $tenant->id)
+            ->where('name', $name)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
+        }
+
+        $role = Role::create([
+            'name' => $name,
+            'guard_name' => 'web',
+            'tenant_id' => $tenant->id,
+        ]);
 
         if (!empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
@@ -40,19 +70,60 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        $tenant = auth()->user()->tenant;
+
+        if ($role->isSystemRole()) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'System roles cannot be edited.');
+        }
+
+        if ($role->tenant_id !== $tenant->id) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'You do not have access to this role.');
+        }
+
         $permissions = Permission::orderBy('group_name')->orderBy('name')->get()->groupBy('group_name');
         $rolePermissions = $role->permissions->pluck('name')->toArray();
+
         return view('subscriber.hris.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
     public function update(Request $request, Role $role)
     {
+        $tenant = auth()->user()->tenant;
+
+        if ($role->isSystemRole()) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'System roles cannot be modified.');
+        }
+
+        if ($role->tenant_id !== $tenant->id) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'You do not have access to this role.');
+        }
+
         $validated = $request->validate([
-            'name' => "required|string|max:100|unique:roles,name,{$role->id}",
+            'name' => 'required|string|max:100',
             'permissions' => 'nullable|array',
         ]);
 
-        $role->update(['name' => $validated['name']]);
+        $name = $validated['name'];
+
+        if (in_array(strtolower($name), $this->systemRoles)) {
+            return back()->withErrors(['name' => 'Cannot use a system-reserved name.'])->withInput();
+        }
+
+        // Check uniqueness per tenant (excluding current role)
+        $exists = Role::where('tenant_id', $tenant->id)
+            ->where('name', $name)
+            ->where('id', '!=', $role->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
+        }
+
+        $role->update(['name' => $name]);
         $role->syncPermissions($validated['permissions'] ?? []);
 
         return redirect()->route('subscriber.hris.roles.index')
@@ -61,7 +132,20 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        $tenant = auth()->user()->tenant;
+
+        if ($role->isSystemRole()) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'System roles cannot be deleted.');
+        }
+
+        if ($role->tenant_id !== $tenant->id) {
+            return redirect()->route('subscriber.hris.roles.index')
+                ->with('error', 'You do not have access to this role.');
+        }
+
         $role->delete();
+
         return redirect()->route('subscriber.hris.roles.index')
             ->with('success', 'Role deleted.');
     }

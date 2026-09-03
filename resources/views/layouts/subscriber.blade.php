@@ -294,6 +294,7 @@
             </li>
 
             <!-- Roles & Permissions -->
+            @hasrole('admin')
             <li>
                 <a href="#rolesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.users.*', 'subscriber.hris.roles.*', 'subscriber.hris.permissions.*') ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
@@ -320,6 +321,7 @@
                     </li>
                 </ul>
             </li>
+            @endhasrole
 
             <!-- System Setup -->
             <li>
