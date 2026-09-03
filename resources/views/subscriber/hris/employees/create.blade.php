@@ -161,6 +161,18 @@
                         <div class="row g-4">
                             <div class="col-lg-6 border-end pe-lg-4">
                                 <h6 class="form-section-title"><i class="bx bx-id-card me-1.5 align-middle"></i>Personal Details</h6>
+
+                                <div class="mb-3 text-center">
+                                    <div class="d-inline-block position-relative" style="cursor: pointer;" onclick="document.getElementById('profile_photo').click()">
+                                        <img id="profile-preview" src="https://ui-avatars.com/api/?name=Employee&background=e2e8f0&color=94a3b8&size=120&bold=true" alt="Profile" class="rounded-circle border border-2 border-dashed border-primary" style="width: 110px; height: 110px; object-fit: cover;">
+                                        <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; border: 2px solid #fff;">
+                                            <i class="bx bx-camera font-size-14"></i>
+                                        </div>
+                                    </div>
+                                    <input type="file" class="d-none" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png" onchange="previewProfilePhoto(this)">
+                                    <div class="form-text text-muted font-size-12 mt-1">Upload Profile Photo (JPG/PNG, max 2MB)</div>
+                                </div>
+
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="name" name="name" required value="{{ old('name') }}" placeholder="e.g. Rahim Ahmed">
@@ -1035,6 +1047,21 @@
             document.getElementById('medical_allowance').value = (gross * (activeSalaryRelation.medical_percent / 100)).toFixed(2);
             document.getElementById('conveyance_allowance').value = (gross * (activeSalaryRelation.tada_percent / 100)).toFixed(2);
         });
+    }
+
+    function previewProfilePhoto(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 2 * 1024 * 1024) {
+                alert('File size must be less than 2MB');
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 </script>
 @endpush

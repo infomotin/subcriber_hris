@@ -209,6 +209,9 @@ class EmployeeController extends Controller
             'education_doc.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'experience_doc' => 'nullable|array',
             'experience_doc.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+
+            // Profile photo
+            'profile_photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         // Filter out empty dynamic array entries (hidden inputs send empty strings)
@@ -266,6 +269,18 @@ class EmployeeController extends Controller
                 'guardian_relation' => $validated['guardian_relation'] ?? null,
                 'guardian_phone' => $validated['guardian_phone'] ?? null,
             ]);
+
+            // 2b. Save profile photo
+            if ($request->hasFile('profile_photo')) {
+                $file = $request->file('profile_photo');
+                $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('employee_images/profile_photos', $filename, 'public');
+                $profile->images()->create([
+                    'tenant_id' => $tenant->id,
+                    'type' => 'profile_photo',
+                    'file_path' => $path,
+                ]);
+            }
 
             // 3. Create Current Address
             $profile->addresses()->create([
