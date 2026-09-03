@@ -3,6 +3,11 @@
     $primaryColor = $tenantTheme['primary_color'] ?? '#5f5af6';
     $fontFamily = $tenantTheme['font_family'] ?? 'Poppins';
     $sidebarStyle = $tenantTheme['sidebar_style'] ?? 'dark';
+    $subscriberConfig = \App\Models\TenantConfig::getGroup('subscriber');
+    $companyLogo = $subscriberConfig['company_logo'] ?? null;
+    $tenant = auth()->user()->tenant ?? null;
+    $tenantName = $tenant->name ?? 'ADMS Portal';
+    $demoLogo = 'https://ui-avatars.com/api/?name=' . urlencode(substr($tenantName, 0, 2)) . '&background=' . ltrim($primaryColor, '#') . '&color=fff&size=120&bold=true&font-size=0.45';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -39,9 +44,13 @@
     <!-- Subscriber Sidebar -->
     <div id="vertical-menu">
         <div class="navbar-brand-box">
-            <a href="{{ route('subscriber.dashboard') }}" class="brand-logo">
-                <i class="bx bx-shield-quarter"></i>
-                <span style="font-family: 'Poppins', sans-serif; font-size: 1rem; letter-spacing: 1.5px; font-weight: 700; color: #ffffff;">ADMS PORTAL</span>
+            <a href="{{ route('subscriber.dashboard') }}" class="brand-logo d-flex align-items-center gap-2">
+                @if($companyLogo && file_exists(public_path('storage/' . $companyLogo)))
+                    <img src="{{ asset('storage/' . $companyLogo) }}" alt="{{ $tenantName }}" style="height: 36px; width: auto; border-radius: 6px; object-fit: contain;">
+                @else
+                    <img src="{{ $demoLogo }}" alt="{{ $tenantName }}" style="height: 36px; width: 36px; border-radius: 8px; object-fit: cover;">
+                @endif
+                <span style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; letter-spacing: 1px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">{{ $tenantName }}</span>
             </a>
         </div>
 
@@ -493,7 +502,12 @@
                 <i class="bx bx-menu-alt-left text-primary" style="font-size: 1.4rem;"></i>
             </button>
             <span class="badge bg-primary px-3 py-2 font-size-11 rounded-pill d-none d-sm-inline-flex">
-                <i class="bx bx-building-house me-1 align-middle"></i> {{ auth()->user()->tenant->name ?? 'Organization' }}
+                @if($companyLogo && file_exists(public_path('storage/' . $companyLogo)))
+                    <img src="{{ asset('storage/' . $companyLogo) }}" alt="" style="height: 16px; width: auto; border-radius: 3px; margin-right: 6px; object-fit: contain;">
+                @else
+                    <i class="bx bx-building-house me-1 align-middle"></i>
+                @endif
+                {{ $tenantName }}
             </span>
         </div>
 
@@ -550,8 +564,8 @@
         <footer class="footer mt-5 py-3 border-top text-slate-500 text-xs bg-white border-slate-100" style="border-radius: 12px; margin-top: 3rem !important;">
             <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <strong>Subscriber Portal</strong> &nbsp;•&nbsp; {{ auth()->user()->tenant->name ?? 'Organization' }}
-                    <span class="badge bg-soft-success text-success ms-2 rounded-pill font-size-9">{{ strtoupper(auth()->user()->tenant->status ?? 'ACTIVE') }} SUBSCRIBER</span>
+                    <strong>Subscriber Portal</strong> &nbsp;•&nbsp; {{ $tenantName }}
+                    <span class="badge bg-soft-success text-success ms-2 rounded-pill font-size-9">{{ strtoupper($tenant->status ?? 'ACTIVE') }} SUBSCRIBER</span>
                 </div>
                 <div>
                     <span>Powered by <a href="https://nexozaint.com" target="_blank" class="fw-bold text-primary text-decoration-none">Nexozaint</a></span>
