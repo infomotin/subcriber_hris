@@ -17,8 +17,20 @@ class DepartmentController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $departments = Department::with('parent')->orderBy('name', 'asc')->paginate(15);
-        return view('subscriber.hris.departments.index', compact('departments'));
+        $search = request('search');
+        $query = Department::with('parent')->withCount('employees');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $departments = $query->orderBy('name', 'asc')->paginate(20)->withQueryString();
+        $totalDepartments = Department::count();
+
+        return view('subscriber.hris.departments.index', compact('departments', 'totalDepartments'));
     }
 
     public function create()
