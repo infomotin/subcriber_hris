@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
@@ -171,24 +172,24 @@ class EmployeeController extends Controller
             'provident_fund_deduction' => 'nullable|numeric|min:0',
             'tax_deduction' => 'nullable|numeric|min:0',
 
-            // Education details (array of degrees)
+            // Education details (array of degrees) - nullable because hidden inputs always submit empty
             'education' => 'nullable|array',
-            'education.*.degree_name' => 'required|string|max:255',
-            'education.*.institution' => 'required|string|max:255',
-            'education.*.passing_year' => 'required|string|max:4',
-            'education.*.result' => 'required|string|max:50',
+            'education.*.degree_name' => 'nullable|string|max:255',
+            'education.*.institution' => 'nullable|string|max:255',
+            'education.*.passing_year' => 'nullable|string|max:4',
+            'education.*.result' => 'nullable|string|max:50',
             'education.*.certification_type' => 'nullable|string|max:100',
 
             // Family / Dependents
             'dependents' => 'nullable|array',
-            'dependents.*.name' => 'required|string|max:255',
-            'dependents.*.relationship' => 'required|string|max:100',
+            'dependents.*.name' => 'nullable|string|max:255',
+            'dependents.*.relationship' => 'nullable|string|max:100',
             'dependents.*.phone' => 'nullable|string|max:20',
 
             // Nominees
             'nominees' => 'nullable|array',
-            'nominees.*.name' => 'required|string|max:255',
-            'nominees.*.relationship' => 'required|string|max:100',
+            'nominees.*.name' => 'nullable|string|max:255',
+            'nominees.*.relationship' => 'nullable|string|max:100',
             'nominees.*.share_percentage' => 'nullable|numeric|min:0|max:100',
             'nominees.*.identity_document_type' => 'nullable|string|max:50',
             'nominees.*.identity_document_number' => 'nullable|string|max:50',
@@ -227,25 +228,26 @@ class EmployeeController extends Controller
             }
         }
 
-        DB::transaction(function () use ($validated, $tenant, $request) {
-            // 1. Create Login User (password auto-hashed by 'hashed' cast on User model)
-            $user = User::create([
-                'tenant_id' => $tenant->id,
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'],
-            ]);
+        try {
+            DB::transaction(function () use ($validated, $tenant, $request) {
+                // 1. Create Login User (password auto-hashed by 'hashed' cast on User model)
+                $user = User::create([
+                    'tenant_id' => $tenant->id,
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => $validated['password'],
+                ]);
 
-            // Assign Subscriber role so user can access the portal
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole('Subscriber');
-            }
+                // Assign Subscriber role so user can access the portal
+                if (method_exists($user, 'assignRole')) {
+                    $user->assignRole('Subscriber');
+                }
 
-            // 2. Create Employee Profile
-            $profile = EmployeeProfile::create([
-                'tenant_id' => $tenant->id,
-                'user_id' => $user->id,
-                'department_id' => $validated['department_id'],
+                // 2. Create Employee Profile
+                $profile = EmployeeProfile::create([
+                    'tenant_id' => $tenant->id,
+                    'user_id' => $user->id,
+                    'department_id' => $validated['department_id'],
                 'designation_id' => $validated['designation_id'],
                 'shift_id' => $validated['shift_id'] ?? null,
                 'employee_type' => $validated['employee_type'] ?? null,
@@ -408,10 +410,14 @@ class EmployeeController extends Controller
                     $fileData = $this->storeFileUpload($request->file($field), $label, 'profile');
                     $profile->documents()->create(array_merge($fileData, ['tenant_id' => $tenant->id]));
                 }
-            }
-        });
+                }
+            });
 
-        return redirect()->route('subscriber.hris.employees.index')->with('success', 'Employee created successfully.');
+            return redirect()->route('subscriber.hris.employees.index')->with('success', 'Employee created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Employee creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->withInput()->with('error', 'Failed to create employee: ' . $e->getMessage());
+        }
     }
 
     public function saveDraft(Request $request)
@@ -580,24 +586,24 @@ class EmployeeController extends Controller
             'provident_fund_deduction' => 'nullable|numeric|min:0',
             'tax_deduction' => 'nullable|numeric|min:0',
 
-            // Education details (array of degrees)
+            // Education details (array of degrees) - nullable because hidden inputs always submit empty
             'education' => 'nullable|array',
-            'education.*.degree_name' => 'required|string|max:255',
-            'education.*.institution' => 'required|string|max:255',
-            'education.*.passing_year' => 'required|string|max:4',
-            'education.*.result' => 'required|string|max:50',
+            'education.*.degree_name' => 'nullable|string|max:255',
+            'education.*.institution' => 'nullable|string|max:255',
+            'education.*.passing_year' => 'nullable|string|max:4',
+            'education.*.result' => 'nullable|string|max:50',
             'education.*.certification_type' => 'nullable|string|max:100',
 
             // Family / Dependents
             'dependents' => 'nullable|array',
-            'dependents.*.name' => 'required|string|max:255',
-            'dependents.*.relationship' => 'required|string|max:100',
+            'dependents.*.name' => 'nullable|string|max:255',
+            'dependents.*.relationship' => 'nullable|string|max:100',
             'dependents.*.phone' => 'nullable|string|max:20',
 
             // Nominees
             'nominees' => 'nullable|array',
-            'nominees.*.name' => 'required|string|max:255',
-            'nominees.*.relationship' => 'required|string|max:100',
+            'nominees.*.name' => 'nullable|string|max:255',
+            'nominees.*.relationship' => 'nullable|string|max:100',
             'nominees.*.share_percentage' => 'nullable|numeric|min:0|max:100',
             'nominees.*.identity_document_type' => 'nullable|string|max:50',
             'nominees.*.identity_document_number' => 'nullable|string|max:50',

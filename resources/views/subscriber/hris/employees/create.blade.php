@@ -269,6 +269,25 @@
     @csrf
     <input type="hidden" name="form_token" id="ew-form-token" value="{{ bin2hex(random_bytes(32)) }}">
 
+    @if($errors->any())
+    <div class="alert alert-danger rounded-3 mb-3" style="font-size:0.78rem;">
+        <i class="bx bx-error-circle me-1"></i>
+        <strong>Please fix the following errors:</strong>
+        <ul class="mb-0 mt-1" style="list-style:disc;padding-left:1.2rem;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3" style="font-size:0.78rem;">
+        <i class="bx bx-error-circle me-1"></i> {{ session('error') }}
+        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     {{-- ==================== STEP 1: BASIC INFO ==================== --}}
     <div class="ew-panel active" id="ew-step-1">
         <div class="ew-card">
