@@ -108,14 +108,14 @@
 
             <!-- Setup Submenu -->
             <li>
-                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*', 'subscriber.hris.movement-types.*', 'subscriber.hris.bill-types.*', 'subscriber.hris.bill-purposes.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'other'])) ? '' : 'collapsed' }}">
+                <a href="#setupSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*', 'subscriber.hris.movement-types.*', 'subscriber.hris.bill-types.*', 'subscriber.hris.bill-purposes.*', 'subscriber.hris.system-parameters.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar'])) ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
                         <i class="bx bx-cog"></i>
                         <span>Setup</span>
                     </div>
                     <i class="bx bx-chevron-down font-size-14"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*', 'subscriber.hris.movement-types.*', 'subscriber.hris.bill-types.*', 'subscriber.hris.bill-purposes.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar', 'other'])) ? 'show' : '' }}" id="setupSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ request()->routeIs('subscriber.hris.departments.*', 'subscriber.hris.designations.*', 'subscriber.hris.shifts.*', 'subscriber.hris.master.*', 'subscriber.hris.increment-rules.*', 'subscriber.hris.movement-types.*', 'subscriber.hris.bill-types.*', 'subscriber.hris.bill-purposes.*', 'subscriber.hris.system-parameters.*') || (request()->routeIs('subscriber.hris.general.show') && in_array(request()->route('module'), ['calendar'])) ? 'show' : '' }}" id="setupSubmenu">
                     <li class="{{ request()->routeIs('subscriber.hris.master.*') ? 'active' : '' }}">
                         <a href="{{ route('subscriber.hris.master.index') }}" class="font-size-13 py-2 text-primary fw-medium">
                             <i class="bx bx-slider-alt me-2 text-primary font-size-15"></i> Master Setup
@@ -141,9 +141,9 @@
                             <i class="bx bx-calendar-event me-2"></i> Calendar Setup
                         </a>
                     </li>
-                    <li class="{{ request()->routeIs('subscriber.hris.general.show') && request()->route('module') == 'other' ? 'active' : '' }}">
-                        <a href="{{ route('subscriber.hris.general.show', 'other') }}" class="font-size-13 py-2">
-                            <i class="bx bx-dots-horizontal-rounded me-2"></i> Other Setup
+                    <li class="{{ request()->routeIs('subscriber.hris.system-parameters.*') ? 'active' : '' }}">
+                        <a href="{{ route('subscriber.hris.system-parameters.index') }}" class="font-size-13 py-2">
+                            <i class="bx bx-slider me-2"></i> System Parameters
                         </a>
                     </li>
                     <li class="{{ request()->routeIs('subscriber.hris.increment-rules.*') ? 'active' : '' }}">
@@ -294,7 +294,15 @@
             </li>
 
             <!-- Roles & Permissions -->
-            @hasrole('admin')
+            @php
+                $isAdmin = false;
+                try {
+                    $isAdmin = auth()->check() && auth()->user()->hasRole('admin');
+                } catch (\Exception $e) {
+                    $isAdmin = false;
+                }
+            @endphp
+            @if($isAdmin)
             <li>
                 <a href="#rolesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.users.*', 'subscriber.hris.roles.*', 'subscriber.hris.permissions.*') ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
@@ -321,7 +329,7 @@
                     </li>
                 </ul>
             </li>
-            @endhasrole
+            @endif
 
             <!-- System Setup -->
             <li>

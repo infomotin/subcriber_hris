@@ -246,6 +246,9 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('roles', Hris\RoleController::class)->except(['show']);
             Route::get('permissions', [Hris\PermissionController::class, 'index'])->name('permissions.index');
 
+            // System Parameters
+            Route::resource('system-parameters', Hris\SystemParameterController::class)->except(['show', 'create', 'edit']);
+
             // Advance Types Setup
             Route::resource('advance-types', Hris\AdvanceTypeController::class)->except(['show']);
 
