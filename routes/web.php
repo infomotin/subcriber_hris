@@ -220,9 +220,9 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::post('increments/do-enforce', [Hris\IncrementController::class, 'doEnforce'])->name('increments.do-enforce');
             Route::get('increments/{increment}/letter', [Hris\IncrementController::class, 'letter'])->name('increments.letter');
             Route::resource('increments', Hris\IncrementController::class)->except(['edit', 'update', 'destroy', 'show']);
+        Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');
         Route::get('general/{module}', [Hris\GeneralController::class, 'show'])->name('general.show');
         Route::post('general/{module}', [Hris\GeneralController::class, 'submit'])->name('general.submit');
-        Route::post('general/verification/verify', [Hris\GeneralController::class, 'verify'])->name('general.verification.verify');
 
             // Bill Types Setup
             Route::resource('bill-types', Hris\BillTypeController::class)->except(['show']);
@@ -241,6 +241,7 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('bills', Hris\BillController::class)->except(['edit', 'update', 'destroy']);
 
             // Roles & Permissions
+            Route::get('users/employee-info', [Hris\UserController::class, 'getEmployeeInfo'])->name('users.employee-info');
             Route::resource('users', Hris\UserController::class)->except(['show']);
             Route::resource('roles', Hris\RoleController::class)->except(['show']);
             Route::get('permissions', [Hris\PermissionController::class, 'index'])->name('permissions.index');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Tenant;
 use App\Models\Department;
+use App\Models\EmployeeProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,7 +34,42 @@ class UserController extends Controller
     {
         $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
-        return view('subscriber.hris.users.create', compact('roles', 'departments'));
+
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $employees = EmployeeProfile::with(['user', 'department', 'designation'])
+            ->where('tenant_id', $tenant->id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('subscriber.hris.users.create', compact('roles', 'departments', 'employees'));
+    }
+
+    public function getEmployeeInfo(Request $request)
+    {
+        $employeeId = $request->get('employee_profile_id');
+        if (!$employeeId) return response()->json(null);
+
+        $tenant = auth()->user()?->tenant ?? Tenant::first();
+
+        $emp = EmployeeProfile::with(['user', 'department', 'designation'])
+            ->where('tenant_id', $tenant->id)
+            ->where('id', $employeeId)
+            ->first();
+
+        if (!$emp) return response()->json(null);
+
+        return response()->json([
+            'id' => $emp->id,
+            'employee_id' => $emp->employee_id,
+            'name' => $emp->user?->name ?? '',
+            'email' => $emp->user?->email ?? '',
+            'phone' => $emp->phone_number,
+            'department' => $emp->department?->name ?? 'N/A',
+            'designation' => $emp->designation?->title ?? 'N/A',
+            'gender' => $emp->gender,
+            'status' => $emp->status,
+            'has_user' => !is_null($emp->user_id),
+        ]);
     }
 
     public function store(Request $request)
@@ -41,11 +77,21 @@ class UserController extends Controller
         $tenant = auth()->user()?->tenant ?? Tenant::first();
 
         $validated = $request->validate([
+            'employee_profile_id' => 'required|exists:employee_profiles,id',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'role' => 'nullable|string|exists:roles,name',
         ]);
+
+        $employee = EmployeeProfile::where('tenant_id', $tenant->id)
+            ->where('id', $validated['employee_profile_id'])
+            ->whereNull('user_id')
+            ->first();
+
+        if (!$employee) {
+            return back()->withErrors(['employee_profile_id' => 'This employee already has a user account or is not found.'])->withInput();
+        }
 
         $user = User::create([
             'name' => $validated['name'],
@@ -54,12 +100,14 @@ class UserController extends Controller
             'tenant_id' => $tenant->id,
         ]);
 
+        $employee->update(['user_id' => $user->id]);
+
         if (!empty($validated['role'])) {
             $user->assignRole($validated['role']);
         }
 
         return redirect()->route('subscriber.hris.users.index')
-            ->with('success', 'User created successfully.');
+            ->with('success', 'User created successfully for ' . $validated['name'] . '.');
     }
 
     public function edit(User $user)
@@ -103,6 +151,8 @@ class UserController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
+
+        EmployeeProfile::where('user_id', $user->id)->update(['user_id' => null]);
 
         $user->removeAllRoles();
         $user->delete();

@@ -153,18 +153,18 @@ class GeneralController extends Controller
         ]);
 
         $employee = EmployeeProfile::findOrFail($validated['employee_id']);
-        $verification = $employee->verifications()->where('section', $validated['section'])->first();
 
-        if ($verification) {
-            $verification->update([
+        $employee->verifications()->updateOrCreate(
+            ['section' => $validated['section']],
+            [
                 'status' => 'verified',
                 'verified_by' => $validated['verified_by'] ?? EmployeeVerification::VERIFIED_BY[$validated['section']] ?? 'HR Admin',
                 'verification_method' => $validated['verification_method'],
                 'verified_at' => now(),
                 'expires_at' => now()->addYear(),
                 'remarks' => $request->input('remarks', 'Verified successfully'),
-            ]);
-        }
+            ]
+        );
 
         return redirect()->back()->with('success', ucfirst($validated['section']) . ' section verified successfully for ' . ($employee->user->name ?? 'employee') . '.');
     }

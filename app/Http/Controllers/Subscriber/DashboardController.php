@@ -15,6 +15,7 @@ use App\Models\SalaryStructure;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\ZktecoUser;
+use App\Models\EmployeeVerification;
 use App\Models\TenantConfig;
 use Illuminate\Http\Request;
 
@@ -334,6 +335,7 @@ class DashboardController extends Controller
 
         $totalEmployees = EmployeeProfile::count();
         $activeEmployees = EmployeeProfile::where('status', 'active')->count();
+        $inactiveEmployees = $totalEmployees - $activeEmployees;
         $departments = Department::withCount('employees')->get();
         $todayLogs = AttendanceLog::whereDate('punched_at', today())->count();
         $todayCheckIns = AttendanceLog::whereDate('punched_at', today())->where('status', 0)->count();
@@ -354,10 +356,26 @@ class DashboardController extends Controller
         $maleCount = EmployeeProfile::where('gender', 'male')->count();
         $femaleCount = EmployeeProfile::where('gender', 'female')->count();
 
-        $recentLeaves = LeaveApplication::with('employee')
+        $recentLeaves = LeaveApplication::with('employee.user', 'leaveType')
             ->orderBy('created_at', 'desc')->take(5)->get();
-        $recentBills = Bill::with('employee')
+        $recentBills = Bill::with('employee.user', 'billType')
             ->orderBy('created_at', 'desc')->take(5)->get();
+        $recentAdvances = Advance::with('employee.user', 'advanceType')
+            ->orderBy('created_at', 'desc')->take(5)->get();
+        $recentMovements = MovementPass::with('employee.user', 'movementType')
+            ->orderBy('created_at', 'desc')->take(5)->get();
+
+        $recentEmployees = EmployeeProfile::with(['user', 'department', 'designation'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        $verificationStats = [
+            'total' => EmployeeVerification::count(),
+            'verified' => EmployeeVerification::where('status', 'verified')->count(),
+            'pending' => EmployeeVerification::where('status', 'pending')->count(),
+            'expired' => EmployeeVerification::where('status', 'expired')->count(),
+        ];
 
         $devicesCount = Device::count();
         $onlineDevicesCount = Device::get()->filter(fn ($d) => $d->isOnline())->count();
@@ -368,6 +386,7 @@ class DashboardController extends Controller
             'tenant',
             'totalEmployees',
             'activeEmployees',
+            'inactiveEmployees',
             'departments',
             'todayLogs',
             'todayCheckIns',
@@ -385,6 +404,10 @@ class DashboardController extends Controller
             'femaleCount',
             'recentLeaves',
             'recentBills',
+            'recentAdvances',
+            'recentMovements',
+            'recentEmployees',
+            'verificationStats',
             'devicesCount',
             'onlineDevicesCount',
             'todayPunches',
