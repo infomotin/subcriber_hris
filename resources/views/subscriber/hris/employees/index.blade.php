@@ -132,6 +132,9 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="text-muted font-size-12">{{ $employees->total() }} total</span>
+                <a href="{{ route('subscriber.hris.employees.import') }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm" style="height: 40px; font-size: 0.78rem;">
+                    <i class="bx bx-import me-1 font-size-14 align-middle"></i> Import
+                </a>
                 <a href="{{ route('subscriber.hris.employees.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm" style="height: 40px;">
                     <i class="bx bx-plus me-1 font-size-16 align-middle"></i> Add Employee
                 </a>
