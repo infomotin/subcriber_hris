@@ -39,12 +39,16 @@ class RolePermissionController extends Controller
     public function storeRole(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|unique:roles,name|max:255',
+            'name' => 'required|string|max:255',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
         ]);
 
-        $role = Role::create(['name' => $validated['name'], 'tenant_id' => 0]);
+        $roleData = ['name' => $validated['name']];
+        if (\App\Models\Role::hasTenantColumn()) {
+            $roleData['tenant_id'] = 0;
+        }
+        $role = Role::create($roleData);
 
         if (! empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);

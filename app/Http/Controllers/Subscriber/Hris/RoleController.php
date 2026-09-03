@@ -14,12 +14,13 @@ class RoleController extends Controller
     public function index()
     {
         $tenant = auth()->user()->tenant;
-        $roles = Role::forTenant($tenant->id)
-            ->with('permissions')
-            ->orderBy('tenant_id')
-            ->orderBy('name')
-            ->paginate(15);
 
+        $query = Role::with('permissions');
+        if (Role::hasTenantColumn()) {
+            $query->forTenant($tenant->id);
+        }
+
+        $roles = $query->orderBy('name')->paginate(15);
         return view('subscriber.hris.roles.index', compact('roles'));
     }
 
@@ -40,25 +41,29 @@ class RoleController extends Controller
 
         $name = $validated['name'];
 
-        // Prevent creating roles with system names
         if (in_array(strtolower($name), $this->systemRoles)) {
             return back()->withErrors(['name' => 'Cannot create a role with a system-reserved name.'])->withInput();
         }
 
-        // Check uniqueness per tenant
-        $exists = Role::where('tenant_id', $tenant->id)
-            ->where('name', $name)
-            ->exists();
+        $roleData = ['name' => $name, 'guard_name' => 'web'];
+        if (Role::hasTenantColumn()) {
+            $roleData['tenant_id'] = $tenant->id;
 
-        if ($exists) {
-            return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
+            $exists = Role::where('tenant_id', $tenant->id)
+                ->where('name', $name)
+                ->exists();
+
+            if ($exists) {
+                return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
+            }
+        } else {
+            $exists = Role::where('name', $name)->exists();
+            if ($exists) {
+                return back()->withErrors(['name' => 'A role with this name already exists.'])->withInput();
+            }
         }
 
-        $role = Role::create([
-            'name' => $name,
-            'guard_name' => 'web',
-            'tenant_id' => $tenant->id,
-        ]);
+        $role = Role::create($roleData);
 
         if (!empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
@@ -77,7 +82,7 @@ class RoleController extends Controller
                 ->with('error', 'System roles cannot be edited.');
         }
 
-        if ($role->tenant_id !== $tenant->id) {
+        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }
@@ -97,7 +102,7 @@ class RoleController extends Controller
                 ->with('error', 'System roles cannot be modified.');
         }
 
-        if ($role->tenant_id !== $tenant->id) {
+        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }
@@ -113,14 +118,19 @@ class RoleController extends Controller
             return back()->withErrors(['name' => 'Cannot use a system-reserved name.'])->withInput();
         }
 
-        // Check uniqueness per tenant (excluding current role)
-        $exists = Role::where('tenant_id', $tenant->id)
-            ->where('name', $name)
-            ->where('id', '!=', $role->id)
-            ->exists();
+        if (Role::hasTenantColumn()) {
+            $exists = Role::where('tenant_id', $tenant->id)
+                ->where('name', $name)
+                ->where('id', '!=', $role->id)
+                ->exists();
+        } else {
+            $exists = Role::where('name', $name)
+                ->where('id', '!=', $role->id)
+                ->exists();
+        }
 
         if ($exists) {
-            return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
+            return back()->withErrors(['name' => 'A role with this name already exists.'])->withInput();
         }
 
         $role->update(['name' => $name]);
@@ -139,7 +149,7 @@ class RoleController extends Controller
                 ->with('error', 'System roles cannot be deleted.');
         }
 
-        if ($role->tenant_id !== $tenant->id) {
+        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }

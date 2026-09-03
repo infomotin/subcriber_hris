@@ -12,7 +12,12 @@ class PermissionController extends Controller
     {
         $permissions = Permission::orderBy('group_name')->orderBy('name')->get()->groupBy('group_name');
         $tenant = auth()->user()->tenant;
-        $roles = Role::forTenant($tenant->id)->orderBy('name')->get();
+
+        $query = Role::query();
+        if (Role::hasTenantColumn()) {
+            $query->forTenant($tenant->id);
+        }
+        $roles = $query->orderBy('name')->get();
 
         return view('subscriber.hris.permissions.index', compact('permissions', 'roles'));
     }

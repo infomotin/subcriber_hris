@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
+use Illuminate\Support\Facades\Schema;
 
 class PermissionSeeder extends Seeder
 {
@@ -60,16 +61,22 @@ class PermissionSeeder extends Seeder
             }
         }
 
-        // System roles (tenant_id = 0, shared globally)
+        $hasTenantColumn = Schema::hasColumn('roles', 'tenant_id');
+
+        // System roles (tenant_id = 0 when column exists)
+        $adminData = ['name' => 'admin', 'guard_name' => 'web'];
+        if ($hasTenantColumn) {
+            $adminData['tenant_id'] = 0;
+        }
         $admin = Role::firstOrCreate(
             ['name' => 'admin', 'guard_name' => 'web'],
-            ['tenant_id' => 0]
+            $hasTenantColumn ? ['tenant_id' => 0] : []
         );
         $admin->syncPermissions(Permission::all());
 
         $hrManager = Role::firstOrCreate(
             ['name' => 'hr-manager', 'guard_name' => 'web'],
-            ['tenant_id' => 0]
+            $hasTenantColumn ? ['tenant_id' => 0] : []
         );
         $hrManager->syncPermissions([
             'employees.view', 'employees.create', 'employees.edit',
@@ -85,7 +92,7 @@ class PermissionSeeder extends Seeder
 
         $employee = Role::firstOrCreate(
             ['name' => 'employee', 'guard_name' => 'web'],
-            ['tenant_id' => 0]
+            $hasTenantColumn ? ['tenant_id' => 0] : []
         );
         $employee->syncPermissions([
             'employees.view',
