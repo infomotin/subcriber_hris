@@ -868,21 +868,21 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    window ewGoToStep = function(step) {
+    window.ewGoToStep = function(step) {
         if (step <= current || completedSteps.has(step - 1) || completedSteps.has(step)) {
             autoSaveDraft(current);
             showStep(step);
         }
     };
 
-    window ewNextStep = function() {
+    window.ewNextStep = function() {
         if (!validateStep(current)) { ewShowToast('Please fill required fields', '#ef4444'); return; }
         completedSteps.add(current);
         autoSaveDraft(current);
         if (current < TOTAL) showStep(current + 1);
     };
 
-    window ewPrevStep = function() {
+    window.ewPrevStep = function() {
         autoSaveDraft(current);
         if (current > 1) showStep(current - 1);
     };
