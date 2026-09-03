@@ -185,14 +185,19 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
             Route::resource('departments', Hris\DepartmentController::class);
             Route::resource('designations', Hris\DesignationController::class);
             Route::resource('shifts', Hris\ShiftController::class);
-            Route::resource('employees', Hris\EmployeeController::class);
+
+            // Employee import (must be before resource to avoid {employee} catch-all)
             Route::get('employees/import', [Hris\EmployeeImportController::class, 'showImportForm'])->name('employees.import');
             Route::get('employees/import/template', [Hris\EmployeeImportController::class, 'downloadTemplate'])->name('employees.import.template');
             Route::post('employees/import/preview', [Hris\EmployeeImportController::class, 'preview'])->name('employees.import.preview');
             Route::post('employees/import/execute', [Hris\EmployeeImportController::class, 'doImport'])->name('employees.import.execute');
+
+            // Employee draft save/load (before resource too)
             Route::post('employees/draft/save', [Hris\EmployeeController::class, 'saveDraft'])->name('employees.draft.save');
             Route::get('employees/draft/load', [Hris\EmployeeController::class, 'loadDraft'])->name('employees.draft.load');
             Route::delete('employees/draft/clear', [Hris\EmployeeController::class, 'clearDraft'])->name('employees.draft.clear');
+
+            Route::resource('employees', Hris\EmployeeController::class);
             Route::resource('kpis', Hris\KpiController::class);
             Route::get('leaves/apply', [Hris\LeaveController::class, 'apply'])->name('leaves.apply');
             Route::get('leaves/balance', [Hris\LeaveController::class, 'getBalance'])->name('leaves.balance');
