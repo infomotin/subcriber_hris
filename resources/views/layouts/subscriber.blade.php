@@ -294,15 +294,6 @@
             </li>
 
             <!-- Roles & Permissions -->
-            @php
-                $isAdmin = false;
-                try {
-                    $isAdmin = auth()->check() && auth()->user()->hasRole('admin');
-                } catch (\Exception $e) {
-                    $isAdmin = false;
-                }
-            @endphp
-            @if($isAdmin)
             <li>
                 <a href="#rolesSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center {{ request()->routeIs('subscriber.hris.users.*', 'subscriber.hris.roles.*', 'subscriber.hris.permissions.*') ? '' : 'collapsed' }}">
                     <div class="d-flex align-items-center">
@@ -329,7 +320,6 @@
                     </li>
                 </ul>
             </li>
-            @endif
 
             <!-- System Setup -->
             <li>
