@@ -99,12 +99,16 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Employee store() called', ['user_id' => auth()->id(), 'input_keys' => array_keys($request->except(['_token']))]);
+
         $tenant = auth()->user()?->tenant ?? null;
         if (!$tenant) {
+            Log::warning('Employee store: no tenant found for user ' . auth()->id());
             return back()->with('error', 'No tenant found. Please log in again.');
         }
 
         if (!$tenant->canAddEmployee()) {
+            Log::warning("Employee store: quota reached for tenant {$tenant->id}");
             return back()->with('error', "Employee registration quota reached ({$tenant->employees()->withoutGlobalScopes()->count()} / {$tenant->max_employees}). Please upgrade your subscription plan to add more employees.");
         }
 
@@ -433,19 +437,24 @@ class EmployeeController extends Controller
             'step_data' => 'required|array',
         ]);
 
-        $draft = EmployeeDraft::updateOrCreate(
-            [
-                'tenant_id' => $tenant->id,
-                'user_id' => auth()->id(),
-                'form_token' => $validated['form_token'],
-                'step' => $validated['step'],
-            ],
-            [
-                'step_data' => $validated['step_data'],
-            ]
-        );
+        try {
+            $draft = EmployeeDraft::updateOrCreate(
+                [
+                    'tenant_id' => $tenant->id,
+                    'user_id' => auth()->id(),
+                    'form_token' => $validated['form_token'],
+                    'step' => $validated['step'],
+                ],
+                [
+                    'step_data' => $validated['step_data'],
+                ]
+            );
 
-        return response()->json(['success' => true, 'draft_id' => $draft->id]);
+            return response()->json(['success' => true, 'draft_id' => $draft->id]);
+        } catch (\Exception $e) {
+            Log::warning('Draft save failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Draft save skipped']);
+        }
     }
 
     public function loadDraft(Request $request)
@@ -460,13 +469,18 @@ class EmployeeController extends Controller
             return response()->json(['drafts' => []]);
         }
 
-        $drafts = EmployeeDraft::where('tenant_id', $tenant->id)
-            ->where('user_id', auth()->id())
-            ->where('form_token', $formToken)
-            ->get()
-            ->pluck('step_data', 'step');
+        try {
+            $drafts = EmployeeDraft::where('tenant_id', $tenant->id)
+                ->where('user_id', auth()->id())
+                ->where('form_token', $formToken)
+                ->get()
+                ->pluck('step_data', 'step');
 
-        return response()->json(['drafts' => $drafts]);
+            return response()->json(['drafts' => $drafts]);
+        } catch (\Exception $e) {
+            Log::warning('Draft load failed: ' . $e->getMessage());
+            return response()->json(['drafts' => []]);
+        }
     }
 
     public function clearDraft(Request $request)
@@ -478,10 +492,14 @@ class EmployeeController extends Controller
 
         $formToken = $request->query('form_token');
         if ($formToken) {
-            EmployeeDraft::where('tenant_id', $tenant->id)
-                ->where('user_id', auth()->id())
-                ->where('form_token', $formToken)
-                ->delete();
+            try {
+                EmployeeDraft::where('tenant_id', $tenant->id)
+                    ->where('user_id', auth()->id())
+                    ->where('form_token', $formToken)
+                    ->delete();
+            } catch (\Exception $e) {
+                Log::warning('Draft clear failed: ' . $e->getMessage());
+            }
         }
 
         return response()->json(['success' => true]);
