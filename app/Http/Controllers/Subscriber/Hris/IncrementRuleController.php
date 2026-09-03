@@ -11,7 +11,12 @@ class IncrementRuleController extends Controller
 {
     public function index()
     {
-        $rules = IncrementRule::orderBy('name')->get();
+        $search = request('search');
+        $query = IncrementRule::query();
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        $rules = $query->orderBy('name')->paginate(20)->withQueryString();
         return view('subscriber.hris.increment-rules.index', compact('rules'));
     }
 

@@ -18,7 +18,17 @@ class KpiController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $kpis = Kpi::with('employee.user')->orderBy('id', 'desc')->paginate(15);
+        $search = request('search');
+        $query = Kpi::with('employee.user');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('goal_title', 'like', "%{$search}%")
+                  ->orWhereHas('employee.user', function ($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+        $kpis = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
         return view('subscriber.hris.kpis.index', compact('kpis'));
     }
 

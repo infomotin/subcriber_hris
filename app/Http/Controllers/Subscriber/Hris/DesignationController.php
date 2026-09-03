@@ -17,7 +17,15 @@ class DesignationController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $designations = Designation::orderBy('title', 'asc')->paginate(15);
+        $search = request('search');
+        $query = Designation::query();
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('grade', 'like', "%{$search}%");
+            });
+        }
+        $designations = $query->orderBy('title', 'asc')->paginate(20)->withQueryString();
         return view('subscriber.hris.designations.index', compact('designations'));
     }
 

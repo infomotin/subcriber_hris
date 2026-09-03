@@ -17,7 +17,12 @@ class ShiftController extends Controller
             session(['tenant_id' => $tenant->id]);
         }
 
-        $shifts = WorkShift::orderBy('name', 'asc')->paginate(15);
+        $search = request('search');
+        $query = WorkShift::query();
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        $shifts = $query->orderBy('name', 'asc')->paginate(20)->withQueryString();
         return view('subscriber.hris.shifts.index', compact('shifts'));
     }
 
