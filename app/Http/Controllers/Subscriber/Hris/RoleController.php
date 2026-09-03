@@ -15,6 +15,7 @@ class RoleController extends Controller
     {
         $tenant = auth()->user()->tenant;
 
+        // Only show roles owned by this tenant (exclude system roles)
         $query = Role::with('permissions');
         if (Role::hasTenantColumn()) {
             $query->where('tenant_id', $tenant->id);
@@ -41,26 +42,26 @@ class RoleController extends Controller
 
         $name = $validated['name'];
 
+        // Prevent creating roles with system-reserved names
         if (in_array(strtolower($name), $this->systemRoles)) {
             return back()->withErrors(['name' => 'Cannot create a role with a system-reserved name.'])->withInput();
         }
 
         $roleData = ['name' => $name, 'guard_name' => 'web'];
+
         if (Role::hasTenantColumn()) {
             $roleData['tenant_id'] = $tenant->id;
 
+            // Uniqueness check WITHIN this tenant only
             $exists = Role::where('tenant_id', $tenant->id)
                 ->where('name', $name)
                 ->exists();
-
-            if ($exists) {
-                return back()->withErrors(['name' => 'A role with this name already exists in your tenant.'])->withInput();
-            }
         } else {
             $exists = Role::where('name', $name)->exists();
-            if ($exists) {
-                return back()->withErrors(['name' => 'A role with this name already exists.'])->withInput();
-            }
+        }
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'A role with this name already exists.'])->withInput();
         }
 
         $role = Role::create($roleData);
@@ -77,12 +78,14 @@ class RoleController extends Controller
     {
         $tenant = auth()->user()->tenant;
 
+        // Block editing system roles
         if ($role->isSystemRole()) {
             return redirect()->route('subscriber.hris.roles.index')
-                ->with('error', 'System roles cannot be edited.');
+                ->with('error', 'System roles cannot be edited from here.');
         }
 
-        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
+        // Block editing roles from OTHER tenants
+        if (Role::hasTenantColumn() && !$role->belongsToTenant($tenant->id)) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }
@@ -97,12 +100,14 @@ class RoleController extends Controller
     {
         $tenant = auth()->user()->tenant;
 
+        // Block updating system roles
         if ($role->isSystemRole()) {
             return redirect()->route('subscriber.hris.roles.index')
-                ->with('error', 'System roles cannot be modified.');
+                ->with('error', 'System roles cannot be modified from here.');
         }
 
-        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
+        // Block updating roles from OTHER tenants
+        if (Role::hasTenantColumn() && !$role->belongsToTenant($tenant->id)) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }
@@ -118,6 +123,7 @@ class RoleController extends Controller
             return back()->withErrors(['name' => 'Cannot use a system-reserved name.'])->withInput();
         }
 
+        // Uniqueness check within this tenant (excluding current role)
         if (Role::hasTenantColumn()) {
             $exists = Role::where('tenant_id', $tenant->id)
                 ->where('name', $name)
@@ -144,12 +150,14 @@ class RoleController extends Controller
     {
         $tenant = auth()->user()->tenant;
 
+        // Block deleting system roles
         if ($role->isSystemRole()) {
             return redirect()->route('subscriber.hris.roles.index')
-                ->with('error', 'System roles cannot be deleted.');
+                ->with('error', 'System roles cannot be deleted from here.');
         }
 
-        if (Role::hasTenantColumn() && $role->tenant_id !== $tenant->id) {
+        // Block deleting roles from OTHER tenants
+        if (Role::hasTenantColumn() && !$role->belongsToTenant($tenant->id)) {
             return redirect()->route('subscriber.hris.roles.index')
                 ->with('error', 'You do not have access to this role.');
         }

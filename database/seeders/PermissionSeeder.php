@@ -13,6 +13,9 @@ class PermissionSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // Clean orphaned permissions (group_name = NULL from old system admin seeder)
+        Permission::whereNull('group_name')->delete();
+
         $groups = [
             'employees' => [
                 'employees.view', 'employees.create', 'employees.edit', 'employees.delete',

@@ -13,6 +13,7 @@ class PermissionController extends Controller
         $permissions = Permission::orderBy('group_name')->orderBy('name')->get()->groupBy('group_name');
         $tenant = auth()->user()->tenant;
 
+        // Only tenant-owned roles (not system roles)
         $query = Role::query();
         if (Role::hasTenantColumn()) {
             $query->where('tenant_id', $tenant->id);

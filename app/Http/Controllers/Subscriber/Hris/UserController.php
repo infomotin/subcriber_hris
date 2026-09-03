@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Subscriber\Hris;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Tenant;
+use App\Models\Role;
 use App\Models\Department;
 use App\Models\EmployeeProfile;
 use Illuminate\Http\Request;
@@ -40,7 +40,7 @@ class UserController extends Controller
             return back()->with('error', 'No tenant found.');
         }
 
-        $roles = Role::where('tenant_id', $tenant->id)->orderBy('name')->get();
+        $roles = Role::forTenantOnly($tenant->id)->orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
         $employees = EmployeeProfile::with(['user', 'department', 'designation'])
             ->where('tenant_id', $tenant->id)
@@ -91,8 +91,18 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'nullable|string|exists:roles,name',
+            'role' => 'nullable|string',
         ]);
+
+        // Tenant-scoped role validation
+        if (!empty($validated['role'])) {
+            $roleExists = Role::where('tenant_id', $tenant->id)
+                ->where('name', $validated['role'])
+                ->exists();
+            if (!$roleExists) {
+                return back()->withErrors(['role' => 'The selected role does not exist in your tenant.'])->withInput();
+            }
+        }
 
         $employee = EmployeeProfile::where('tenant_id', $tenant->id)
             ->where('id', $validated['employee_profile_id'])
@@ -128,19 +138,35 @@ class UserController extends Controller
                 ->with('error', 'User not found in your tenant.');
         }
 
-        $roles = Role::where('tenant_id', $tenant->id)->orderBy('name')->get();
+        $roles = Role::forTenantOnly($tenant->id)->orderBy('name')->get();
         $userRoles = $user->getRoleNames()->toArray();
         return view('subscriber.hris.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
     public function update(Request $request, User $user)
     {
+        $tenant = auth()->user()->tenant;
+        if (!$tenant || $user->tenant_id !== $tenant->id) {
+            return redirect()->route('subscriber.hris.users.index')
+                ->with('error', 'User not found in your tenant.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => "required|email|unique:users,email,{$user->id}",
             'password' => 'nullable|string|min:6|confirmed',
-            'role' => 'nullable|string|exists:roles,name',
+            'role' => 'nullable|string',
         ]);
+
+        // Tenant-scoped role validation
+        if (!empty($validated['role'])) {
+            $roleExists = Role::where('tenant_id', $tenant->id)
+                ->where('name', $validated['role'])
+                ->exists();
+            if (!$roleExists) {
+                return back()->withErrors(['role' => 'The selected role does not exist in your tenant.'])->withInput();
+            }
+        }
 
         $data = [
             'name' => $validated['name'],
