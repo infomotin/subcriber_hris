@@ -187,7 +187,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label">New Password <small class="text-muted">(leave blank to keep current)</small></label>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder="Minimum 8 characters">
+                                    <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="Minimum 8 characters">
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -428,25 +428,25 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="basic_salary" class="form-label">Basic Salary (৳) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control salary-breakdown" id="basic_salary" name="basic_salary" required placeholder="0.00" value="{{ old('basic_salary', $salary->basic_salary ?? '') }}">
+                                    <input type="number" class="form-control salary-breakdown" id="basic_salary" name="basic_salary" placeholder="0.00" value="{{ old('basic_salary', $salary->basic_salary ?? '') }}">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="house_rent" class="form-label">House Rent (৳) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control salary-breakdown" id="house_rent" name="house_rent" required placeholder="0.00" value="{{ old('house_rent', $salary->house_rent ?? '') }}">
+                                    <input type="number" class="form-control salary-breakdown" id="house_rent" name="house_rent" placeholder="0.00" value="{{ old('house_rent', $salary->house_rent ?? '') }}">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="medical_allowance" class="form-label">Medical Allowance (৳) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control salary-breakdown" id="medical_allowance" name="medical_allowance" required placeholder="0.00" value="{{ old('medical_allowance', $salary->medical_allowance ?? '') }}">
+                                    <input type="number" class="form-control salary-breakdown" id="medical_allowance" name="medical_allowance" placeholder="0.00" value="{{ old('medical_allowance', $salary->medical_allowance ?? '') }}">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="conveyance_allowance" class="form-label">TA / DA Allowance (৳) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control salary-breakdown" id="conveyance_allowance" name="conveyance_allowance" required placeholder="0.00" value="{{ old('conveyance_allowance', $salary->conveyance_allowance ?? '') }}">
+                                    <input type="number" class="form-control salary-breakdown" id="conveyance_allowance" name="conveyance_allowance" placeholder="0.00" value="{{ old('conveyance_allowance', $salary->conveyance_allowance ?? '') }}">
                                 </div>
                             </div>
                         </div>

@@ -317,7 +317,7 @@
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" name="password" required placeholder="Min 8 characters">
+                                <input type="password" class="form-control" name="password" required autocomplete="new-password" placeholder="Min 8 characters">
                             </div>
                         </div>
                     </div>
@@ -549,19 +549,19 @@
                 <div class="row g-2">
                     <div class="col-md-3 mb-2">
                         <label class="form-label">Basic (&#2547;) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control ew-salary-field" id="ew-basic" name="basic_salary" required placeholder="0.00">
+                        <input type="number" class="form-control ew-salary-field" id="ew-basic" name="basic_salary" placeholder="0.00">
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label">House Rent (&#2547;) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control ew-salary-field" id="ew-house" name="house_rent" required placeholder="0.00">
+                        <input type="number" class="form-control ew-salary-field" id="ew-house" name="house_rent" placeholder="0.00">
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label">Medical (&#2547;) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control ew-salary-field" id="ew-medical" name="medical_allowance" required placeholder="0.00">
+                        <input type="number" class="form-control ew-salary-field" id="ew-medical" name="medical_allowance" placeholder="0.00">
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label">TA/DA (&#2547;) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control ew-salary-field" id="ew-tada" name="conveyance_allowance" required placeholder="0.00">
+                        <input type="number" class="form-control ew-salary-field" id="ew-tada" name="conveyance_allowance" placeholder="0.00">
                     </div>
                 </div>
                 <div class="row g-2">
