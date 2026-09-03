@@ -97,10 +97,13 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        $tenant = auth()->user()?->tenant ?? Tenant::first();
+        $tenant = auth()->user()?->tenant ?? null;
+        if (!$tenant) {
+            return back()->with('error', 'No tenant found. Please log in again.');
+        }
 
-        if ($tenant && !$tenant->canAddEmployee()) {
-            return back()->with('error', "Employee registration quota reached ({$tenant->employees()->count()} / {$tenant->max_employees}). Please upgrade your subscription plan to add more employees.");
+        if (!$tenant->canAddEmployee()) {
+            return back()->with('error', "Employee registration quota reached ({$tenant->employees()->withoutGlobalScopes()->count()} / {$tenant->max_employees}). Please upgrade your subscription plan to add more employees.");
         }
 
         $validated = $request->validate([
@@ -108,9 +111,9 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            
+
             // Profile master details
-            'employee_id' => 'required|string|unique:employee_profiles,employee_id',
+            'employee_id' => 'required|string|unique:employee_profiles,employee_id,NULL,id,tenant_id,' . $tenant->id,
             'department_id' => 'nullable|exists:departments,id',
             'designation_id' => 'nullable|exists:designations,id',
             'shift_id' => 'nullable|exists:work_shifts,id',
@@ -119,7 +122,7 @@ class EmployeeController extends Controller
             'dob' => 'required|date',
             'phone_number' => 'required|string|max:20',
             'blood_group' => 'nullable|string|max:5',
-            'status' => 'required|string',
+            'status' => 'required|string|in:active,probation,terminated,resigned',
             'employee_type' => 'nullable|string|in:worker,staff,manager',
             'overtime_eligible' => 'nullable|boolean',
             'overtime_rate' => 'nullable|numeric|min:0',
@@ -208,14 +211,31 @@ class EmployeeController extends Controller
             'experience_doc.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
+        // Filter out empty dynamic array entries (hidden inputs send empty strings)
+        foreach (['education', 'dependents', 'nominees', 'experiences'] as $key) {
+            if (!empty($validated[$key])) {
+                $validated[$key] = array_values(array_filter($validated[$key], function ($item) {
+                    return !empty($item['degree_name']) || !empty($item['institution']) || !empty($item['name']) || !empty($item['company_name']);
+                }));
+                if (empty($validated[$key])) {
+                    unset($validated[$key]);
+                }
+            }
+        }
+
         DB::transaction(function () use ($validated, $tenant, $request) {
-            // 1. Create Login User
+            // 1. Create Login User (password auto-hashed by 'hashed' cast on User model)
             $user = User::create([
                 'tenant_id' => $tenant->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password'])
+                'password' => $validated['password'],
             ]);
+
+            // Assign Subscriber role so user can access the portal
+            if (method_exists($user, 'assignRole')) {
+                $user->assignRole('Subscriber');
+            }
 
             // 2. Create Employee Profile
             $profile = EmployeeProfile::create([
@@ -225,7 +245,7 @@ class EmployeeController extends Controller
                 'designation_id' => $validated['designation_id'],
                 'shift_id' => $validated['shift_id'] ?? null,
                 'employee_type' => $validated['employee_type'] ?? null,
-                'overtime_eligible' => $request->boolean('overtime_eligible'),
+                'overtime_eligible' => !empty($validated['overtime_eligible']),
                 'overtime_rate' => $validated['overtime_rate'] ?? null,
                 'employee_id' => $validated['employee_id'],
                 'joining_date' => $validated['joining_date'],

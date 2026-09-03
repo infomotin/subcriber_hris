@@ -120,7 +120,7 @@ class Tenant extends Model
 
     public function canAddEmployee(): bool
     {
-        return $this->employees()->count() < $this->max_employees;
+        return $this->employees()->withoutGlobalScopes()->count() < $this->max_employees;
     }
 
     public function employees()
